@@ -1,0 +1,7 @@
+---
+# network config for ovhs hosts
+ovhs-storage-ip: 172.20.0.99
+ovhs-manager-ip: 172.20.0.100
+ovhs01-mgmt-ip: 172.20.0.101
+ovhs02-mgmt-ip: 172.20.0.102
+ovhs03-mgmt-ip: 172.20.0.103
