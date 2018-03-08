@@ -13,5 +13,6 @@
 #     - bridge-utils
      - chrony
      - cockpit-dashboard
-     - cockpit-storage
+     - cockpit-storaged
+     - cockpit-machines
     tags: packages
