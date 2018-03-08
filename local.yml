@@ -1,0 +1,17 @@
+- hosts: localhost
+  become: true
+  tasks:
+  - name: Upgrade all packages
+    yum: name=* state=latest
+    tags: packages
+  - name: Install packages
+    yum: name={{ item }} state=present
+    with_items:
+#     - kbd
+     - vim
+#     - parted
+#     - bridge-utils
+     - chrony
+     - cockpit-dashboard
+     - cockpit-storage
+    tags: packages
