@@ -4,6 +4,12 @@
   - name: Upgrade all packages
     yum: name=* state=latest
     tags: packages
+
+- firewalld:
+    port: 9090/tcp
+    permanent: true
+    state: enabled
+
   - name: Install packages
     yum: name={{ item }} state=present
     with_items:
