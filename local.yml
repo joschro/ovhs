@@ -5,13 +5,12 @@
     yum: name=* state=latest
     tags: packages
 
-- firewalld:
-    port: 9090/tcp
-    permanent: true
-    state: enabled
+  - name: Configure firewall
+    firewalld: port=9090/tcp permanent=true state=enabled
+    tags: services
 
   - name: Install packages
-    yum: name={{ item }} state=present
+    yum: name={{ item }} state=latest
     with_items:
 #     - kbd
      - vim
@@ -24,3 +23,10 @@
     tags: packages
     notify:
      - restart cockpit
+
+  - name: Enable services
+    service: name={{ item }} state=started enabled=yes
+    with_items:
+     - cockpit.socket
+     - chronyd
+    tags: services
