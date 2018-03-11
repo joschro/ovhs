@@ -10,9 +10,12 @@ ovhs:
     ip_mgmt:    172.20.0.100
   ovhs01:
     hostname:   "ovhs01"
-    if_public:  "enp3s0"
-    if_dmz:     "enp4s1"
-    if_mgmt:    "enp2s0"
+#    if_public:  "enp3s0"
+#    if_dmz:     "enp4s1"
+#    if_mgmt:    "enp2s0"
+    if_public:  "enp0s25"
+    if_dmz:     "enp0s20u2"
+    if_mgmt:    "enp0s20u1"
     ip_mgmt:    172.20.0.101
   ovhs02:
     hostname:   "ovhs02"

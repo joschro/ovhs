@@ -1,22 +1,15 @@
 ---
 # tasks file for ovhs-gluster-master
 
-- name: Run nmcli to set hostname
-  command: /usr/bin/nmcli general hostname {{ ovhs.ovhs01.hostname }}.{{ ovhs.domainname }}
-  tags: network
-  run_once: true
-
-- name: Generate /etc/hosts file
-  template: src=hosts.j2 dest=/etc/hosts owner=root group=root mode=0644
-  tags: network
-
-- name: Test
-  debug: msg="{{ ovhs.ovhs01.if_mgmt }} {{ ovhs.ovhs01.ip_mgmt }} {{ inventory_hostname }} {{ ovhs.ovhs01.hostname }}.{{ ovhs.domainname }}"
-  tags: test
+#- name: Run nmcli to set hostname
+#  command: /usr/bin/nmcli general hostname {{ ovhs.ovhs01.hostname }}.{{ ovhs.domainname }}
+#  tags: network
+#  run_once: true
 
 - name: Upgrade all packages
   yum: name=* state=latest
   tags: packages
+  run_once: true
 
 - name: Configure firewall
   firewalld: port=9090/tcp permanent=true state=enabled
@@ -30,6 +23,11 @@
    - parted
    - bridge-utils
    - chrony
+   - NetworkManager-glib
+#   - libnm-qt-devel.x86_64
+   - nm-connection-editor.x86_64
+   - libsemanage-python
+   - policycoreutils-python
    - cockpit-dashboard
    - cockpit-storaged
    - cockpit-networkmanager
@@ -43,8 +41,34 @@
    - vdsm-hook-isolatedprivatevlan
    - ovirt-engine-sdk-python
   tags: packages
-  notify:
-   - restart cockpit.socket
+#  notify:
+#   - restart cockpit
+
+- hostname:
+    name: "{{ ovhs.ovhs01.hostname }}"
+
+- name: Generate /etc/hosts file
+  template: src=hosts.j2 dest=/etc/hosts owner=root group=root mode=0644
+  tags: network
+
+# replace
+# /usr/lib/python2.7/site-packages/ansible/modules/net_tools/nmcli.py
+# with
+# https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/modules/net_tools/nmcli.py
+# first
+- name: Set up mgmt network interface
+  nmcli:
+    conn_name: mgmt
+    ifname: "{{ ovhs.ovhs01.if_mgmt }}"
+    type: ethernet
+    ip4: "{{ ovhs.ovhs01.ip_mgmt }}/24"
+    gw4: "{{ ovhs.ovhs01.ip_mgmt }}"
+    state: present
+  tags: network
+
+- name: Test
+  debug: msg="{{ ovhs.ovhs01.if_mgmt }} {{ ovhs.ovhs01.ip_mgmt }} {{ inventory_hostname }} {{ ovhs.ovhs01.hostname }}.{{ ovhs.domainname }}"
+  tags: test
 
 - name: Enable services
   service: name={{ item }} state=started enabled=yes
