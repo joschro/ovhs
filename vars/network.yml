@@ -1,0 +1,22 @@
+---
+# network config for ovhs hosts
+ovhs:
+  domainname: "schroeder-home.org"
+  storage:
+    hostname:   "storage"
+    ip_mgmt:    172.20.0.99
+  manager:
+    hostname:   "manager"
+    ip_mgmt:    172.20.0.100
+  ovhs01:
+    hostname:   "ovhs01"
+    if_public:  "enp3s0"
+    if_dmz:     "enp4s1"
+    if_mgmt:    "enp2s0"
+    ip_mgmt:    172.20.0.101
+  ovhs02:
+    hostname:   "ovhs02"
+    ip_mgmt:    172.20.0.102
+  ovhs03:
+    hostname:   "ovhs03"
+    ip_mgmt:    172.20.0.103

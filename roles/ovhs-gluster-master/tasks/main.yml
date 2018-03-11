@@ -1,2 +1,60 @@
 ---
 # tasks file for ovhs-gluster-master
+
+- name: Run nmcli to set hostname
+  command: /usr/bin/nmcli general hostname {{ ovhs.ovhs01.hostname }}.{{ ovhs.domainname }}
+  tags: network
+  run_once: true
+
+- name: Generate /etc/hosts file
+  template: src=hosts.j2 dest=/etc/hosts owner=root group=root mode=0644
+  tags: network
+
+- name: Test
+  debug: msg="{{ ovhs.ovhs01.if_mgmt }} {{ ovhs.ovhs01.ip_mgmt }} {{ inventory_hostname }} {{ ovhs.ovhs01.hostname }}.{{ ovhs.domainname }}"
+  tags: test
+
+- name: Upgrade all packages
+  yum: name=* state=latest
+  tags: packages
+
+- name: Configure firewall
+  firewalld: port=9090/tcp permanent=true state=enabled
+  tags: services
+
+- name: Install packages
+  yum: name={{ item }} state=latest
+  with_items:
+   - kbd
+   - vim
+   - parted
+   - bridge-utils
+   - chrony
+   - cockpit-dashboard
+   - cockpit-storaged
+   - cockpit-networkmanager
+   - cockpit-machines
+   - ovirt-hosted-engine-setup
+   - glusterfs-server
+   - glusterfs-coreutils
+   - vdsm-gluster
+   - vdsm-hook-nestedvt
+   - vdsm-hook-macspoof
+   - vdsm-hook-isolatedprivatevlan
+   - ovirt-engine-sdk-python
+  tags: packages
+  notify:
+   - restart cockpit.socket
+
+- name: Enable services
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+   - cockpit.socket
+   - chronyd
+   - glusterd
+  tags: services
+
+- name: Create gluster volume "engine"
+  gluster_volume: state=present name=engine bricks=/gluster/engine/brick cluster="{{ ovhs.ovhs01.hostname }}.{{ ovhs.domainname }}"
+  run_once: true
+  tags: gluster

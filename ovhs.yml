@@ -5,9 +5,9 @@
   become: yes
     
   roles:
-    - { role: ovhs-base-config, tags: ["ovhs-base-config"] }
+#    - { role: ovhs-base-config, tags: ["ovhs-base-config"] }
     - { role: ovhs-gluster-master, tags: ["ovhs-gluster-master"] }
-    - { role: ovhs-ovirt-install, tags: ["ovhs-ovirt-install"] }
+#    - { role: ovhs-ovirt-install, tags: ["ovhs-ovirt-install"] }
 
   vars_files:
     - vars/network.yml
