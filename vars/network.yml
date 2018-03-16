@@ -4,10 +4,10 @@ ovhs:
   domainname: "schroeder-home.org"
   storage:
     hostname:   "storage"
-    ip_mgmt:    172.20.0.99
+    ip_mgmt:    "172.20.0.99"
   manager:
     hostname:   "manager"
-    ip_mgmt:    172.20.0.100
+    ip_mgmt:    "172.20.0.100"
   ovhs01:
     hostname:   "ovhs01"
 #    if_public:  "enp3s0"
@@ -16,10 +16,10 @@ ovhs:
     if_public:  "enp0s25"
     if_dmz:     "enp0s20u2"
     if_mgmt:    "enp0s20u1"
-    ip_mgmt:    172.20.0.101
+    ip_mgmt:    "172.20.0.101"
   ovhs02:
     hostname:   "ovhs02"
-    ip_mgmt:    172.20.0.102
+    ip_mgmt:    "172.20.0.102"
   ovhs03:
     hostname:   "ovhs03"
-    ip_mgmt:    172.20.0.103
+    ip_mgmt:    "172.20.0.103"

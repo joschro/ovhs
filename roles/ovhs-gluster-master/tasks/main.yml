@@ -55,7 +55,8 @@
 # /usr/lib/python2.7/site-packages/ansible/modules/net_tools/nmcli.py
 # with
 # https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/modules/net_tools/nmcli.py
-# first
+# first:
+# curl -o /usr/lib/python2.7/site-packages/ansible/modules/net_tools/nmcli.py https://raw.githubusercontent.com/ansible/ansible/devel/lib/ansible/modules/net_tools/nmcli.py
 - name: Set up mgmt network interface
   nmcli:
     conn_name: mgmt
@@ -64,6 +65,7 @@
     ip4: "{{ ovhs.ovhs01.ip_mgmt }}/24"
     gw4: "{{ ovhs.ovhs01.ip_mgmt }}"
     state: present
+    autoconnect: yes
   tags: network
 
 - name: Test
