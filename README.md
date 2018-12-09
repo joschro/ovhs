@@ -3,10 +3,13 @@ An extensible virtualization server setup based on oVirt on Gluster for home use
 
 ## Overview
 
+### Architecture
+This setup uses a main server running CentOS with oVirt on Gluster, also called hyperconverged setup - see [Deploying a Single Node oVirt and Gluster Hyperconverged](https://ovirt.org/documentation/gluster-hyperconverged/chap-Single_node_hyperconverged/) for documentation.
+
 ## Installation
 
 ### Install master server
-Download the latest CentOS image for x86 64bit from `https://www.centos.org/download/`; on a Linux system this could look like this:
+Download the latest CentOS image for x86 64bit from [Download CentOS](https://www.centos.org/download/); on a Linux system this could look like this:
 ```
 wget -c http://isoredirect.centos.org/centos/7/isos/x86_64/CentOS-7-x86_64-DVD-1810.iso
 ```
