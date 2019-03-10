@@ -1,7 +1,7 @@
 ---
 # network config for ovhs hosts
 ovhs:
-  domainname: "schroeder-home.org"
+  domainname: "ovhs.org"
   storage:
     hostname:   "arbiter"
     ip_mgmt:    "172.20.0.99"
