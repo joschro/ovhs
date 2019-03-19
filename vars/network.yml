@@ -2,14 +2,15 @@
 # network config for ovhs hosts
 ovhs:
   domainname: "ovhs.local"
-  storage:
-    hostname:   "ovhsarbiter"
+  storage01:
+    hostname:   "storage01"
     ip_mgmt:    "172.20.0.99"
   engine:
     hostname:   "ovhsengine"
     ip_mgmt:    "172.20.0.100"
   ovirt01:
-    hostname:   "ovhs01"
+    node:       "01"
+      hostname:   "ovhs"
     if_mgmt:    "enp2s0"
     if_public:  "enp3s0"
     if_back:    "enp4s1"
