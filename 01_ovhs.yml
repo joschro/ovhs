@@ -1,8 +1,10 @@
 ---
-- name: setup entire environment
+
+- name: setup oVirt host
   hosts: localhost
   connection: local
   become: yes
+  gather_facts: no
     
   roles:
 #    - { role: ovhs-base-config, tags: ["ovhs-base-config"] }
