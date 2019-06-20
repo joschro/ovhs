@@ -1,0 +1,31 @@
+[ovhs]
+ovhs01		ansible_connection=local
+
+[gluster-hosts]
+ovhs01		ansible_connection=local
+ovhs[02:03]	ansible_connection=ssh		ansible_user=root
+
+[ovirt-hosts]
+ovhs01		ansible_connection=local
+
+[services]
+engine		ansible_connection=ssh		ansible_user=root
+firewall	ansible_connection=ssh		ansible_user=root
+files		ansible_connection=ssh		ansible_user=root
+freeipa		ansible_connection=ssh		ansible_user=root
+spacewalk	ansible_connection=ssh		ansible_user=root
+mail		ansible_connection=ssh		ansible_user=root
+home		ansible_connection=ssh		ansible_user=root
+container	ansible_connection=ssh		ansible_user=root
+doc		ansible_connection=ssh		ansible_user=root
+honeypot	ansible_connection=ssh		ansible_user=root
+
+[desktops]
+jochen		ansible_connection=ssh		ansible_user=root
+julia		ansible_connection=ssh		ansible_user=root
+elias		ansible_connection=ssh		ansible_user=root
+johanna		ansible_connection=ssh		ansible_user=root
+
+[virtual-machines:children]
+services
+desktops

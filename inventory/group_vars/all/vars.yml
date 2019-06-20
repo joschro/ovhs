@@ -1,0 +1,7 @@
+---
+
+ovhs_domain_name: ovhs.home
+ovhs_network_mgmt: "172.20"
+ovhs_network_back: "172.19"
+ovhs_network_dmz: "172.21"
+root_pwd: "{{ vault_root_pwd }}"

@@ -1,25 +1,15 @@
 #!/bin/sh
 
-ssh-keygen
+test -f ~/.ssh/id_rsa || ssh-keygen
 #ssh-copy-id root@localhost
 
-rpm -q git || yum install -y git && {
-  git clone https://github.com/joschro/joschro.git
-  git clone https://github.com/joschro/ovhs.git
-  curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  cat <<EOF > ~/.vimrc
-" Plugins will be downloaded under the specified directory.
-call plug#begin('~/.vim/plugged')
+cd ~
+rpm -q git || yum install -y git
+test -f joschro/git-update.sh || git clone https://github.com/joschro/joschro.git
+test -f ovhs/run_ovhs_ansible_install.sh || git clone https://github.com/joschro/ovhs.git
 
-" Declare the list of plugins.
-Plug 'pearofducks/ansible-vim'
+cd ovhs
+rpm -q ansible || yum install -y ansible
+ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts --check 01_ovhs_base_setup.yml
 
-" List ends here. Plugins become visible to Vim after this call.
-call plug#end()
-EOF
-}
-
-rpm -q ansible || yum install -y ansible && {
-  echo ansible-playbook 01_ovirt.yml
-}
 #ansible-galaxy install -r roles/requirements.yml -p roles

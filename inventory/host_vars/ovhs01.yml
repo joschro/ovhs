@@ -1,0 +1,10 @@
+---
+
+if_mgmt:     "enp2s0"
+if_public:   "enp3s0"
+if_back:     "enp4s1"
+if_dmz:      "enp4s1"
+ipv4_mgmt:   "172.20.0.101"
+ipv4_public: "dhcp"
+ipv4_back:   "172.19.0.101"
+ipv4_dmz:    "172.21.0.101"
