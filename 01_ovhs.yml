@@ -7,6 +7,7 @@
   gather_facts: no
     
   roles:
+# packages: gdeploy cockpit-ovirt-dashboard vdsm-gluster ovirt-engine-appliance
 #    - { role: ovhs-base-config, tags: ["ovhs-base-config"] }
     - { role: ovhs-gluster-master, tags: ["ovhs-gluster-master"] }
 #    - { role: ovhs-ovirt-install, tags: ["ovhs-ovirt-install"] }
