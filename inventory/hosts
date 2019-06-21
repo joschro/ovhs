@@ -1,11 +1,14 @@
+[all:vars]
+ansible_host='{{ ovhs_hostname }}.{{ ovhs_domain_name }}'
+
 [ovhs]
 ovhs01		ansible_connection=local
 
-[gluster-hosts]
+[gluster_hosts]
 ovhs01		ansible_connection=local
 ovhs[02:03]	ansible_connection=ssh		ansible_user=root
 
-[ovirt-hosts]
+[ovirt_hosts]
 ovhs01		ansible_connection=local
 
 [services]
@@ -26,6 +29,6 @@ julia		ansible_connection=ssh		ansible_user=root
 elias		ansible_connection=ssh		ansible_user=root
 johanna		ansible_connection=ssh		ansible_user=root
 
-[virtual-machines:children]
+[virtual_machines:children]
 services
 desktops

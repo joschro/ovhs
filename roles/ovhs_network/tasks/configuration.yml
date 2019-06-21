@@ -1,0 +1,24 @@
+---
+
+- name: set up mgmt network interface
+  nmcli:
+    conn_name: mgmt
+    ifname: "{{ ovhs_if_mgmt }}"
+    type: ethernet
+    ip4: "{{ ovhs_ip_mgmt }}/24"
+    gw4: "{{ ovhs_ip_mgmt }}"
+    state: present
+    autoconnect: yes
+  tags: network
+
+- name: set up backend network interface
+  nmcli:
+    conn_name: back
+    ifname: "{{ ovhs_if_back }}"
+    type: ethernet
+    ip4: "{{ ovhs_ip_back }}/24"
+    gw4: "{{ ovhs_ip_back }}"
+    state: present
+    autoconnect: yes
+  tags: network
+

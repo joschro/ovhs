@@ -2,7 +2,6 @@
 
 - name: setup oVirt host
   hosts: ovhs
-  gather_facts: no
     
   roles:
 # packages: gdeploy cockpit-ovirt-dashboard vdsm-gluster ovirt-engine-appliance
@@ -10,6 +9,10 @@
 #    - ovhs-gluster-master
  #       tags: "ovhs-gluster-master"
 #    - { role: ovhs-ovirt-install, tags: ["ovhs-ovirt-install"] }
-    - hostname
+#    - displayfacts 
+    - ovhs_hostname
+    - ovhs_etc_hosts
+    - ovhs_network
+#    - ovhs_gluster
 #  vars_files:
 #    - vars/network.yml

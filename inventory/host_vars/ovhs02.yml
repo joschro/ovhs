@@ -1,7 +1,9 @@
 ---
 
-if_mgmt:   ""
-if_back:   ""
-ipv4_mgmt: "172.20.0.102"
-ipv4_back: "172.19.0.102"
+ovhs_hostname:       "ovhs02"
+ovhs_hostname_back:  "ovhs02_back"
+ovhs_if_mgmt:        ""
+ovhs_if_back:        ""
+ovhs_ipv4_mgmt:      "{{ovhs_network_mgmt }}.0.102"
+ovhs_ipv4_back:      "{{ovhs_network_back }}.0.102"
 

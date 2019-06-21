@@ -10,6 +10,7 @@ test -f ovhs/run_ovhs_ansible_install.sh || git clone https://github.com/joschro
 
 cd ovhs
 rpm -q ansible || yum install -y ansible
-ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts --check 01_ovhs_base_setup.yml
+#ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts --check 01_ovhs_base_setup.yml
+ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts 01_ovhs_base_setup.yml
 
 #ansible-galaxy install -r roles/requirements.yml -p roles

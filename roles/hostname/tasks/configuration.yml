@@ -1,5 +1,0 @@
----
-
-- name: set system hostname
-  hostname:
-    name: '{{ hostname }}'

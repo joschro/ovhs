@@ -6,16 +6,11 @@
     - '{{ ansible_distribution }}_{{ ansible_distribution_major_version }}.yml'
     - '{{ ansible_os_family }}.yml'
   tags:
-    - 'role::template'
-    - 'role::template:install'
-    - 'role::template:config'
-
-- import_tasks: installation.yml
-  tags:
-    - 'role::template'
-    - 'role::template:install'
+    - 'role::ovhs_etc_hosts'
+    - 'role::ovhs_etc_hosts:install'
+    - 'role::ovhs_etc_hosts:config'
 
 - import_tasks: configuration.yml
   tags:
-    - 'role::template'
-    - 'role::template:config'
+    - 'role::ovhs_etc_hosts'
+    - 'role::ovhs_etc_hosts:config'

@@ -1,0 +1,16 @@
+---
+
+# template related packages
+template_packages:
+  - bridge-utils
+  - iproute
+
+# remove software
+template_packages_removed:
+  - NetworkManager
+  - NetworkManager-libnm
+  - avahi-autoipd
+  - avahi
+
+# template variable
+template_variable: value

@@ -1,0 +1,7 @@
+---
+
+- name: set system hostname and domainname
+  hostname:
+    name: '{{ ovhs_hostname }}'
+#    name: '{{ ovhs_hostname }}.{{ ovhs_domain_name }}'
+#    name: '{{ ansible_host }}'

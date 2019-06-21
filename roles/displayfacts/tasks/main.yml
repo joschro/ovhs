@@ -1,0 +1,9 @@
+---
+
+- name: Display some facts
+  debug:
+    msg: "The OVHS hostname is {{ ovhs_hostname }} and the OVHS domainname is {{ ovhs_domain_name }}"
+
+- name: Display all variables/facts known for a host
+  debug: var=hostvars[inventory_hostname]
+#    verbosity: 4
