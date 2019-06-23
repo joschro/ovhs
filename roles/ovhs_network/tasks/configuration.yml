@@ -7,7 +7,7 @@
     ifname: "{{ ovhs_if_mgmt }}"
     type: ethernet
     ip4: "{{ ovhs_ipv4_mgmt }}/24"
-    gw4: "{{ ovhs_ipv4_mgmt }}"
+    #gw4: "{{ ovhs_ipv4_mgmt }}"
     state: present
     autoconnect: yes
   when: ovhs_ipv4_mgmt is defined
@@ -31,7 +31,7 @@
     ifname: "{{ ovhs_if_back }}"
     type: ethernet
     ip4: "{{ ovhs_ipv4_back }}/24"
-    gw4: "{{ ovhs_ipv4_back }}"
+    #gw4: "{{ ovhs_ipv4_back }}"
     state: present
     autoconnect: yes
   when: ovhs_ipv4_back is defined
@@ -48,32 +48,48 @@
   notify:
     - 'restart network'
 
-- name: set up dmz network interface
-  nmcli:
-    #conn_name: dmz
-    conn_name: "{{ ovhs_if_dmz }}"
-    #ifname: "{{ ovhs_if_dmz }}"
-    type: vlan
-    vlandev: "{{ ovhs_if_mgmt }}"
-    vlanid: 21
-    ip4: "{{ ovhs_ipv4_dmz }}/24"
-    gw4: "{{ ovhs_ipv4_dmz }}"
-    state: present
-    autoconnect: yes
-  when: ovhs_ipv4_dmz is defined
+# commented out because of bug in ansible's nmcli code for VLANs
+#- name: set up dmz network interface
+#  nmcli:
+#    #conn_name: dmz
+#    conn_name: "{{ ovhs_if_dmz }}"
+#    #ifname: "{{ ovhs_if_dmz }}"
+#    type: vlan
+#    vlandev: "{{ ovhs_if_back }}"
+#    vlanid: 21
+#    ip4: "{{ ovhs_ipv4_dmz }}/24"
+#    #gw4: "{{ ovhs_ipv4_dmz }}"
+#    state: present
+#    autoconnect: yes
+#  when: ovhs_ipv4_dmz is defined
+#  tags: network
+#
+#- name: ansible bug fix for static dmz ip
+#  replace:
+#     path: "/etc/sysconfig/network-scripts/ifcfg-{{ ovhs_if_dmz }}"
+#     regexp: 'BOOTPROTO=dhcp'
+#     replace: 'BOOTPROTO=static'
+#     backup: yes
+#  when: ovhs_ipv4_dmz is defined
+#  tags: network
+#  notify:
+#    - 'restart network'
+
+# workaround for bug in ansible's nmcli code for VLANs
+- name: register variable for later check if file exists
+  stat: 
+    path: /etc/sysconfig/network-scripts/ifcfg-{{ ovhs_if_dmz }}
+  register: p
   tags: network
 
-- name: ansible bug fix for static dmz ip
-  replace:
-     path: "/etc/sysconfig/network-scripts/ifcfg-{{ ovhs_if_dmz }}"
-     regexp: 'BOOTPROTO=dhcp'
-     replace: 'BOOTPROTO=static'
-     backup: yes
-  when: ovhs_ipv4_dmz is defined
+- name: set up dmz network interface
+  command: nmcli connection add con-name {{ ovhs_if_dmz }} type vlan dev {{ ovhs_if_back }} id 21 ip4 {{ ovhs_ipv4_dmz }}/24
+  when: ovhs_ipv4_dmz is defined and p.stat.exists == False
   tags: network
   notify:
     - 'restart network'
 
+# probably not needed
 #- name: network restart
 #  service:
 #    name: network
