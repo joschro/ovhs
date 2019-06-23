@@ -1,11 +1,7 @@
 ---
 
-- name: install packages for template
+- name: install packages for ovhs_gluster
   package:
-    name: '{{ template_packages }}'
+    name: '{{ ovhs_gluster_packages }}'
     state: present
 
-- name: remove template
-  package:
-    name: '{{ template_packages_removed }}'
-    state: absent

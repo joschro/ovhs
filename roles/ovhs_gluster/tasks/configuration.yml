@@ -1,15 +1,11 @@
 ---
 
-- name: configuration
+- name: create gluster configuration file gdeploy.conf
   template:
-    src: etc/
-    dest: /etc/
-    owner: root
-    group: root
-    mode: 0644
-    seuser: system_u
-    serole: object_r
-    setype: etc_t
-    selevel: s0
-  notify:
-    - 'template reload sysctl'
+    src: root/gdeploy.conf.j2
+    dest: /root/gdeploy.conf
+  tags: gluster
+
+- name: set up gluster configuration
+  command: gdeploy /root/gdeploy.conf
+  tags: gluster

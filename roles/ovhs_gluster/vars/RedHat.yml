@@ -1,16 +1,10 @@
 ---
 
-# template related packages
-template_packages:
-  - bridge-utils
-  - iproute
+# ovhs_gluster related packages
+ovhs_gluster_packages:
+  - http://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm
+  - gdeploy
+  - cockpit-ovirt-dashboard
+  - vdsm-gluster
+  - ovirt-engine-appliance
 
-# remove software
-template_packages_removed:
-  - NetworkManager
-  - NetworkManager-libnm
-  - avahi-autoipd
-  - avahi
-
-# template variable
-template_variable: value

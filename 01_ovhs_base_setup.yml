@@ -10,9 +10,17 @@
  #       tags: "ovhs-gluster-master"
 #    - { role: ovhs-ovirt-install, tags: ["ovhs-ovirt-install"] }
 #    - displayfacts 
-    - ovhs_hostname
-    - ovhs_etc_hosts
-    - ovhs_network
-#    - ovhs_gluster
+    - role: ovhs_hostname
+      tags:
+        - networking
+    - role: ovhs_etc_hosts
+      tags:
+        - networking
+    - role: ovhs_network
+      tags:
+        - networking
+    - role: ovhs_gluster
+      tags:
+        - storage
 #  vars_files:
 #    - vars/network.yml
