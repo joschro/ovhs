@@ -13,6 +13,7 @@
     - { role: ovhs_hostname, tags: ["networking"] }
     - { role: ovhs_etc_hosts, tags: ["networking"] }
     - { role: ovhs_network, tags: ["networking"] }
+    - { role: ovhs_dnsmaq, tags: ["networking"] }
     - { role: ovhs_gluster, tags: ["storage"] }
 #  vars_files:
 #    - vars/network.yml
