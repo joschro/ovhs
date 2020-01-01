@@ -14,11 +14,22 @@ Download the latest CentOS image for x86 64bit from [Download CentOS](https://ww
 wget -c http://isoredirect.centos.org/centos/7/isos/x86_64/CentOS-7-x86_64-DVD-1810.iso
 ```
 
-Now, as user `root` write the ISO image to an SD card to boot the server from; on Linux, this could look like this:
+Now, as user `root` write the ISO image to an SD card / USB stick to boot the server from; on Linux, this could look like this:
 ```
-# dd if=CentOS-7-x86_64-DVD-1810.iso of=/dev/sdb bs=4M
+# dd bs=4M status=progress if=CentOS-7-x86_64-DVD-1810.iso of=/dev/sdb
 ```
 
+Boot from SD card / USB stick and press the <TAB> key at "Install CentOS" selection; add
 ```
-http://raw.githubusercontent.com/joschro/ovhs/master/ovhs-ks.cfg
+ks=http://raw.githubusercontent.com/joschro/ovhs/master/ovhs-ks.cfg
+or easier
+ks=http://bit.ly/ovhs-ks
+```
+to the kernel command line parameters and press <ENTER>.
+
+The kickstart process will now take place.
+
+Next, login to your installed system and
+```
+[root@ovhs ~]# sh ./run_ovhs_ansible_install.sh
 ```

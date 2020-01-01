@@ -9,6 +9,11 @@ test -f ovhs/run_ovhs_ansible_install.sh || git clone https://github.com/joschro
 
 cd ovhs
 rpm -q ansible || yum install -y ansible
+test -f ../vault_pass || {
+  echo "../vault_pass not found."
+  echo "Please encrypt your secrets in inventory/group_vars/all/vault.yml and add your vault password to ../vault_pass first."
+  exit
+}
 #ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts --check 01_ovhs_base_setup.yml
 ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts -t networking $* 01_ovhs_base_setup.yml
 echo;echo "$0 done with networking part. Press any key."
