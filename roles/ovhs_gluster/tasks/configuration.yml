@@ -7,5 +7,5 @@
   tags: gluster
 
 - name: set up gluster configuration
-  command: gdeploy /root/gdeploy.conf
+  command: gdeploy -c /root/gdeploy.conf
   tags: gluster
