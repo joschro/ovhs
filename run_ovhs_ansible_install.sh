@@ -13,7 +13,7 @@ rpm -q ansible || yum install -y ansible
 ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts -t networking $* 01_ovhs_base_setup.yml
 echo;echo "$0 done with networking part. Press any key."
 read ANSW
-ssh-copy-id root@ovhs01_back
+ssh-copy-id root@ovhs01-back
 ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts -t storage $* 01_ovhs_base_setup.yml
 
 

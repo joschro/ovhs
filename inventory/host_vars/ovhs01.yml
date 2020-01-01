@@ -1,8 +1,8 @@
 ---
 
 ovhs_hostname:      "ovhs01"
-ovhs_hostname_back: "ovhs01_back"
-ovhs_hostname_dmz:  "ovhs01_dmz"
+ovhs_hostname_back: "ovhs01-back"
+ovhs_hostname_dmz:  "ovhs01-dmz"
 ovhs_if_mgmt:       "enp2s0"
 ovhs_if_public:     "enp3s0"
 ovhs_if_back:       "enp4s1"
