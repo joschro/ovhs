@@ -28,3 +28,8 @@ ks=http://bit.ly/ovhs-ks
 to the kernel command line parameters and press <ENTER>.
 
 The kickstart process will now take place.
+
+Next, login to your installed system and
+```
+[root@ovhs ~]# sh ./run_ovhs_ansible_install.sh
+```
