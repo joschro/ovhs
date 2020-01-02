@@ -3,9 +3,9 @@
 - name: create gluster configuration file gdeploy.conf
   template:
     src: root/gdeploy.conf.j2
-    dest: /root/gdeploy.conf
+    dest: /etc/gdeploy.conf
   tags: gluster
 
 - name: set up gluster configuration
-  command: gdeploy -c /root/gdeploy.conf
+  command: gdeploy -c /etc/gdeploy.conf
   tags: gluster
