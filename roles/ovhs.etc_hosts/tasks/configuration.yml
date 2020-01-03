@@ -1,6 +1,6 @@
 ---
 
-- name: Add the mgmt network inventory into /etc/hosts
+- name: Add the mgmt network inventory to /etc/hosts
   lineinfile:
     path: /etc/hosts
     regexp: '.*{{ item }}$'
@@ -10,7 +10,7 @@
   with_items:
     - "{{ groups['all'] }}"
 
-- name: Add the backend network inventory into /etc/hosts
+- name: Add the backend network inventory to /etc/hosts
   lineinfile:
     path: /etc/hosts
     regexp: '.*{{ hostvars[item]["ovhs_hostname_back"] }}$'
@@ -20,7 +20,7 @@
   with_items:
     - "{{ groups['all'] }}"
 
-- name: Add the dmz network inventory into /etc/hosts
+- name: Add the dmz network inventory to /etc/hosts
   lineinfile:
     path: /etc/hosts
     regexp: '.*{{ hostvars[item]["ovhs_hostname_dmz"] }}$'

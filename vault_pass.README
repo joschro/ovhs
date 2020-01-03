@@ -1,1 +1,0 @@
-enter the password that you used to encrypt inventory/group_vars/all/vault.yml file with into vault_pass *AND* move the file to a directory outside of any location that gets synchronized with e.g. github!
