@@ -3,7 +3,8 @@
 test -f ~/.ssh/id_rsa || ssh-keygen
 
 cd ~
-rpm -q git || yum install -y git
+rpm -q git || yum install -y git ansible
+rpm -q ansible || yum install -y ansible
 test -f joschro/git-update.sh || git clone https://github.com/joschro/joschro.git
 test -f ovhs/run-ovhs_ansible_install.sh || {
   git clone https://github.com/joschro/ovhs.git
@@ -11,8 +12,9 @@ test -f ovhs/run-ovhs_ansible_install.sh || {
   exit
 }
 
+test -d /etc/ansible/roles/ovirt.repositories || ansible-galaxy install ovirt.repositories
+test -d /etc/ansible/roles/ovirt.engine-setup || ansible-galaxy install ovirt.engine-setup
 cd ovhs
-rpm -q ansible || yum install -y ansible
 #ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts --check 01-ovhs_base_setup.yml
 ansible-playbook --ask-vault-pass -i inventory/hosts -t networking $* 01-ovhs_base_setup.yml
 echo;echo "$0 done with networking part. Press any key."

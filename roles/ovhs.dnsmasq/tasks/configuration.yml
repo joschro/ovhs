@@ -1,0 +1,15 @@
+---
+
+- name: configure dnsmasq
+  template:
+    src: etc/dnsmasq.d/dnsmasq-ovhs.conf.j2
+    dest: /etc/dnsmasq.d/dnsmasq-ovhs.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - 'restart dnsmasq'
+
+- name: Configure firewall for DNS
+  firewalld: service=dns permanent=true state=enabled
+  tags: network

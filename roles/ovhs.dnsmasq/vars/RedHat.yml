@@ -1,0 +1,5 @@
+---
+
+# dnsmasq related packages
+dnsmasq_packages:
+  - dnsmasq

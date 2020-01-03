@@ -1,0 +1,6 @@
+---
+
+- name: install packages for dnsmasq
+  package:
+    name: '{{ dnsmasq_packages }}'
+    state: present

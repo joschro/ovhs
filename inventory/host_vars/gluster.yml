@@ -2,3 +2,4 @@
 
 ovhs_hostname:      "gluster"
 ovhs_ipv4_mgmt:     "{{ ovhs_network_mgmt }}.0.101"
+ovhs_if_mgmt:       "enp2s0"

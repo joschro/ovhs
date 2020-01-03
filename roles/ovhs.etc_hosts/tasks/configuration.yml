@@ -4,7 +4,7 @@
   lineinfile:
     path: /etc/hosts
     regexp: '.*{{ item }}$'
-    line: "{{ hostvars[item]['ovhs_ipv4_mgmt'] }} {{ hostvars[item]['ovhs_hostname'] }}.{{ hostvars[item]['ovhs_domain_name'] }} {{ hostvars[item]['ovhs_hostname'] }} {{item}}"
+    line: "{{ hostvars[item]['ovhs_ipv4_mgmt'] }} {{ hostvars[item]['ovhs_hostname'] }}.{{ hostvars[item]['ovhs_domain_name'] }} {{ hostvars[item]['ovhs_hostname'] }} # {{item}}"
     state: present
   when: hostvars[item]['ovhs_ipv4_mgmt'] is defined
   with_items:
@@ -14,7 +14,7 @@
   lineinfile:
     path: /etc/hosts
     regexp: '.*{{ hostvars[item]["ovhs_hostname_back"] }}$'
-    line: "{{ hostvars[item]['ovhs_ipv4_back'] }} {{ hostvars[item]['ovhs_hostname_back'] }}.{{ hostvars[item]['ovhs_domain_name'] }} {{ hostvars[item]['ovhs_hostname_back'] }}"
+    line: "{{ hostvars[item]['ovhs_ipv4_back'] }} {{ hostvars[item]['ovhs_hostname_back'] }}.{{ hostvars[item]['ovhs_domain_name'] }} {{ hostvars[item]['ovhs_hostname_back'] }} # {{item}}"
     state: present
   when: hostvars[item]['ovhs_ipv4_back'] is defined
   with_items:
@@ -24,7 +24,7 @@
   lineinfile:
     path: /etc/hosts
     regexp: '.*{{ hostvars[item]["ovhs_hostname_dmz"] }}$'
-    line: "{{ hostvars[item]['ovhs_ipv4_dmz'] }} {{ hostvars[item]['ovhs_hostname_dmz'] }}.{{ hostvars[item]['ovhs_domain_name'] }} {{ hostvars[item]['ovhs_hostname_dmz'] }}"
+    line: "{{ hostvars[item]['ovhs_ipv4_dmz'] }} {{ hostvars[item]['ovhs_hostname_dmz'] }}.{{ hostvars[item]['ovhs_domain_name'] }} {{ hostvars[item]['ovhs_hostname_dmz'] }} # {{item}}"
     state: present
   when: hostvars[item]['ovhs_ipv4_dmz'] is defined
   with_items:

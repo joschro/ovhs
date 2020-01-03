@@ -13,7 +13,7 @@
     - { role: ovhs.hostname, tags: ["networking"] }
     - { role: ovhs.etc_hosts, tags: ["networking"] }
     - { role: ovhs.network, tags: ["networking"] }
-    - { role: ovhs.dnsmaq, tags: ["networking"] }
+    - { role: ovhs.dnsmasq, tags: ["networking"] }
     - { role: ovhs.gluster, tags: ["storage"] }
     - { role: ovirt.repositories, tags: ["ovirt"] }
-    - { role: ovirt.hosted_engine_setup, tags: ["ovirt"] }
+#    - { role: ovirt.hosted_engine_setup, tags: ["ovirt"] }

@@ -1,0 +1,15 @@
+---
+# As an example this file is keep in plaintext, if you want to
+# encrypt this file, please execute following command:
+#
+#  $ ansible-vault encrypt passwords.yml
+#
+# It will ask you for a password, which you must then pass to
+# ansible interactively when executing the playbook.
+#
+# $ ansible-playbook myplaybook.yml --ask-vault-pass
+#
+
+ovhs_root_password: 1234567890
+he_appliance_password: {{ ovhs_root_password }}
+he_admin_password: {{ ovhs_root_password }}
