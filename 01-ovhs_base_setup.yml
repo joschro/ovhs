@@ -6,6 +6,7 @@
     
   vars:
     ovirt_repositories_ovirt_release_rpm: "http://plain.resources.ovirt.org/pub/yum-repo/ovirt-release43.rpm"
+#    ovirt_repositories_ovirt_release_rpm: "http://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm"
 #  vars_files:
 #    - vars/network.yml
   roles:
@@ -14,6 +15,6 @@
     - { role: ovhs.etc_hosts, tags: ["networking"] }
     - { role: ovhs.network, tags: ["networking"] }
     - { role: ovhs.dnsmasq, tags: ["networking"] }
+    - { role: ovirt.repositories, tags: ["ovirt","storage"] }
     - { role: ovhs.gluster, tags: ["storage"] }
-    - { role: ovirt.repositories, tags: ["ovirt"] }
 #    - { role: ovirt.hosted_engine_setup, tags: ["ovirt"] }
