@@ -5,7 +5,11 @@ test -f ~/.ssh/id_rsa || ssh-keygen
 cd ~
 rpm -q git || yum install -y git
 test -f joschro/git-update.sh || git clone https://github.com/joschro/joschro.git
-test -f ovhs/run-ovhs_ansible_install.sh || git clone https://github.com/joschro/ovhs.git
+test -f ovhs/run-ovhs_ansible_install.sh || {
+  git clone https://github.com/joschro/ovhs.git
+  echo "Please add a password to ovhs/passwords.yml and encrypt it with \"ansible-vault encrypt passwords.yml\""
+  exit
+}
 
 cd ovhs
 rpm -q ansible || yum install -y ansible
