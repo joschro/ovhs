@@ -13,7 +13,8 @@ test -f ovhs/run-ovhs_ansible_install.sh || {
 }
 
 test -d /etc/ansible/roles/ovirt.repositories || ansible-galaxy install ovirt.repositories
-test -d /etc/ansible/roles/ovirt.engine-setup || ansible-galaxy install ovirt.engine-setup
+#test -d /etc/ansible/roles/ovirt.engine-setup || ansible-galaxy install ovirt.engine-setup
+test -d /etc/ansible/roles/ovirt.hosted_engine_setup || ansible-galaxy install ovirt.hosted_engine_setup
 cd ovhs
 #ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts --check 01-ovhs_base_setup.yml
 ansible-playbook --ask-vault-pass -i inventory/hosts -t networking $* 01-ovhs_base_setup.yml
