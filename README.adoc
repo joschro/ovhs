@@ -11,12 +11,12 @@ This setup uses a main server running CentOS with oVirt on Gluster, also called 
 ### Install master server
 Download the latest CentOS image for x86 64bit from [Download CentOS](https://www.centos.org/download/); on a Linux system this could look like this:
 ```
-wget -c http://isoredirect.centos.org/centos/7/isos/x86_64/CentOS-7-x86_64-DVD-1810.iso
+wget -c http://isoredirect.centos.org/centos/7/isos/x86_64/CentOS-7-x86_64-DVD-1908.iso
 ```
 
 Now, as user `root` write the ISO image to an SD card / USB stick to boot the server from; on Linux, this could look like this:
 ```
-# dd bs=4M status=progress if=CentOS-7-x86_64-DVD-1810.iso of=/dev/sdb
+# dd bs=4M status=progress if=CentOS-7-x86_64-DVD-1908.iso of=/dev/sdb
 ```
 
 Boot from SD card / USB stick and press the <TAB> key at "Install CentOS" selection; add
