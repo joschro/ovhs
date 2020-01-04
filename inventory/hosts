@@ -9,7 +9,7 @@ gluster		ansible_connection=local
 ovhs01		ansible_connection=local
 ovhs[02:03]	ansible_connection=ssh		ansible_user=root
 
-[ovirt_hosts]
+[ovirt_master]
 ovhs01		ansible_connection=local
 
 [services]

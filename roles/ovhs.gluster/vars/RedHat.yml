@@ -2,7 +2,7 @@
 
 # ovhs_gluster related packages
 ovhs_gluster_packages:
-  - {{ ovirt_repositories_ovirt_release_rpm }}
+#  - "{{ ovirt_repositories_ovirt_release_rpm }}"
   - gdeploy
   - cockpit-ovirt-dashboard
   - vdsm-gluster

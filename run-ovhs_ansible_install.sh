@@ -1,10 +1,10 @@
 #!/bin/sh
 
+rpm -q git ansible ovirt-release43 || yum install -y git ansible http://resources.ovirt.org/pub/yum-repo/ovirt-release43.rpm
+
 test -f ~/.ssh/id_rsa || ssh-keygen
 
 cd ~
-rpm -q git || yum install -y git ansible
-rpm -q ansible || yum install -y ansible
 test -f joschro/git-update.sh || git clone https://github.com/joschro/joschro.git
 test -f ovhs/run-ovhs_ansible_install.sh || {
   git clone https://github.com/joschro/ovhs.git
@@ -12,9 +12,8 @@ test -f ovhs/run-ovhs_ansible_install.sh || {
   exit
 }
 
-test -d /etc/ansible/roles/ovirt.repositories || ansible-galaxy install ovirt.repositories
 #test -d /etc/ansible/roles/ovirt.engine-setup || ansible-galaxy install ovirt.engine-setup
-test -d /etc/ansible/roles/ovirt.hosted_engine_setup || ansible-galaxy install ovirt.hosted_engine_setup
+#test -d /etc/ansible/roles/ovirt.hosted_engine_setup || ansible-galaxy install ovirt.hosted_engine_setup
 cd ovhs
 #ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts --check 01-ovhs_base_setup.yml
 ansible-playbook --ask-vault-pass -i inventory/hosts -t networking $* 01-ovhs_base_setup.yml
@@ -23,7 +22,8 @@ read ANSW
 ssh-copy-id root@ovhs01-back
 ansible-playbook --ask-vault-pass -i inventory/hosts -t storage $* 01-ovhs_base_setup.yml
 
+#ansible-playbook --ask-vault-pass -i inventory/hosts -t ovirt $* 01-ovhs_base_setup.yml --ask-vault-pass
+
 #ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
-ansible-playbook --ask-vault-pass -i inventory/hosts -t ovirt $* 01-ovhs_base_setup.yml --ask-vault-pass
 
 #ansible-galaxy install -r roles/requirements.yml -p roles
