@@ -16,4 +16,4 @@
     - { role: ovhs.network, tags: ["networking"] }
     - { role: ovhs.dnsmasq, tags: ["networking"] }
     - { role: ovhs.gluster, tags: ["storage"] }
-#    - { role: ovirt.hosted_engine_setup, tags: ["ovirt"] }
+    - { role: ovirt.hosted_engine_setup, tags: ["ovirt"] }
