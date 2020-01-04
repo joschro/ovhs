@@ -1,6 +1,7 @@
 #!/bin/sh
 
 rpm -q git ansible ovirt-release43 || yum install -y git ansible http://resources.ovirt.org/pub/yum-repo/ovirt-release43.rpm
+rpm -q ovirt-hosted-engine-setup || yum install -y ovirt-hosted-engine-setup
 
 test -f ~/.ssh/id_rsa || ssh-keygen
 
