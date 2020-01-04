@@ -11,5 +11,5 @@
 #
 
 ovhs_root_password: 1234567890
-he_appliance_password: {{ ovhs_root_password }}
-he_admin_password: {{ ovhs_root_password }}
+he_appliance_password: 1234567890
+he_admin_password: 1234567890
