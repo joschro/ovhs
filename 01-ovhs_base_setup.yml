@@ -3,6 +3,9 @@
 - name: Install oVirt Hosted Engine base setup
   hosts: ovhs01
   connection: local
+
+  vars_files:
+    - variables.yml
     
   roles:
 #    - displayfacts 
