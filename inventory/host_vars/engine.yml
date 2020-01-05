@@ -1,4 +1,4 @@
 ---
 
-ovhs_hostname:  "engine"
-ovhs_ipv4_mgmt: "{{ ovhs_network_mgmt }}.0.100"
+ovhs_hostname:  "{{ ovhs_host_engine }}"
+ovhs_ipv4_mgmt: "{{ he_vm_ip_addr }}"

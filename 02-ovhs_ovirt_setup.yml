@@ -1,11 +1,8 @@
 ---
 
 - name: Install oVirt Hosted Engine
-  hosts: ovhs01
+  hosts: ovhs_master
   connection: local
 
-#  vars_files:
-#    - variables.yml
-    
   roles:
-    - { role: ovirt.hosted_engine_setup, tags: ["ovirt"] }
+    - { role: ovirt.hosted_engine_setup, tags: ["ovirt"], no_log: False }

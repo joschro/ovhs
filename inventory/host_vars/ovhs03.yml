@@ -1,8 +1,8 @@
 ---
 
-ovhs_hostname:       "ovhs03"
-ovhs_hostname_back:  "ovhs03_back"
+ovhs_hostname:       "{{ ovhs_host_node03 }}"
+ovhs_hostname_back:  "{{ ovhs_hostname }}-back"
 ovhs_if_mgmt:        ""
 ovhs_if_back:        ""
-ovhs_ipv4_mgmt:      "{{ovhs_network_mgmt }}.0.103"
-ovhs_ipv4_back:      "{{ovhs_network_back }}.0.103"
+ovhs_ipv4_mgmt:      "{{ ovhs_network_mgmt }}.0.103"
+ovhs_ipv4_back:      "{{ ovhs_network_back }}.0.103"

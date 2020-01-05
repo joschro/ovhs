@@ -1,5 +1,24 @@
 ---
 
+- name: Configure firewall for DNS
+  firewalld: service=dns permanent=true state=enabled
+  tags: network
+
+- name: Add localhost to /etc/resolv.conf
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: '^nameserver 127.0.0.1'
+    line: "nameserver 127.0.0.1"
+    insertbefore: '^nameserver.*'
+    state: present
+    create: yes
+
+- name: Enable dnsmasq service
+  service:
+    name: dnsmasq
+    enabled: yes
+    state: started
+
 - name: Configure dnsmasq
   template:
     src: etc/dnsmasq.d/dnsmasq-ovhs.conf.j2
@@ -9,13 +28,3 @@
     mode: 0644
   notify:
     - 'restart dnsmasq'
-
-- name: Configure firewall for DNS
-  firewalld: service=dns permanent=true state=enabled
-  tags: network
-
-- name: Enable dnsmasq service
-  service:
-    name: dnsmasq
-    enabled: yes
-    state: started

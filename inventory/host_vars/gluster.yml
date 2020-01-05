@@ -1,6 +1,6 @@
 ---
 
-ovhs_hostname:      "gluster"
-ovhs_ipv4_mgmt:     "{{ ovhs_network_mgmt }}.0.101"
-ovhs_if_mgmt:       "enp2s0"
+ovhs_hostname:      "{{ ovhs_host_storage }}"
+ovhs_ipv4_mgmt:     "{{ ovhs_ipv4_mgmt_master }}"
+ovhs_if_mgmt:       "{{ ovhs_if_mgmt_master }}"
 ovhs_if_dmz:        ""

@@ -1,12 +1,9 @@
 ---
 
 - name: Install oVirt Hosted Engine base setup
-  hosts: ovhs01
+  hosts: ovhs_master
   connection: local
 
-  vars_files:
-    - variables.yml
-    
   roles:
 #    - displayfacts 
     - { role: ovhs.hostname, tags: ["networking"] }
