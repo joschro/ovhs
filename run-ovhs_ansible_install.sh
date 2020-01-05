@@ -23,7 +23,7 @@ read ANSW
 ssh-copy-id root@ovhs01-back
 ansible-playbook --ask-vault-pass -i inventory/hosts -t storage $* 01-ovhs_base_setup.yml
 
-#ansible-playbook --ask-vault-pass -i inventory/hosts -t ovirt $* 01-ovhs_base_setup.yml --ask-vault-pass
+#ansible-playbook --ask-vault-pass -i inventory/hosts -t ovirt $* 01-ovhs_base_setup.yml
 
 #ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
 
