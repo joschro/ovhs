@@ -1,19 +1,14 @@
 ---
 
-- name: Install oVirt Hosted Engine
-  hosts: ovirt_master
+- name: Install oVirt Hosted Engine base setup
+  hosts: ovhs01
   connection: local
     
-#  vars:
-#    ovirt_repositories_ovirt_release_rpm: "http://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm"
-#  vars_files:
-#    - vars/network.yml
   roles:
 #    - displayfacts 
-#    - { role: ovirt.repositories, tags: ["networking","ovirt","storage"] }
     - { role: ovhs.hostname, tags: ["networking"] }
     - { role: ovhs.etc_hosts, tags: ["networking"] }
     - { role: ovhs.network, tags: ["networking"] }
     - { role: ovhs.dnsmasq, tags: ["networking"] }
     - { role: ovhs.gluster, tags: ["storage"] }
-    - { role: ovirt.hosted_engine_setup, tags: ["ovirt"] }
+#    - { role: ovirt.hosted_engine_setup, tags: ["ovirt"] }
