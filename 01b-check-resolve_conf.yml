@@ -1,8 +1,8 @@
 ---
 
-- name: Configure firewall for DNS
-  firewalld: service=dns permanent=true state=enabled
-  tags: network
+- name: Install oVirt Hosted Engine base setup, afterburner
+  hosts: ovhs_master
+  connection: local
 
 - name: Add localhost to /etc/resolv.conf
   lineinfile:
@@ -21,19 +21,3 @@
     insertbefore: '^nameserver.*'
     state: present
     create: yes
-
-- name: Enable dnsmasq service
-  service:
-    name: dnsmasq
-    enabled: yes
-    state: started
-
-- name: Configure dnsmasq
-  template:
-    src: etc/dnsmasq.d/dnsmasq-ovhs.conf.j2
-    dest: /etc/dnsmasq.d/dnsmasq-ovhs.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - 'restart dnsmasq'

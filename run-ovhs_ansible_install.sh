@@ -20,7 +20,10 @@ cd ovhs
 ansible-playbook --ask-vault-pass -i inventory/hosts -t networking $* 01-ovhs_base_setup.yml
 echo;echo "$0 done with networking part. Press any key."
 read ANSW
-ssh-copy-id root@ovhs01-back
+
+ansible-playbook -i inventory/hosts 01b-check-resolve_conf.yml
+ssh-copy-id root@ovhs01-back || exit
+
 ansible-playbook --ask-vault-pass -i inventory/hosts -t storage $* 01-ovhs_base_setup.yml
 
 ansible-playbook --ask-vault-pass -i inventory/hosts -t ovirt $* 02-ovhs_ovirt_setup.yml
@@ -28,3 +31,7 @@ ansible-playbook --ask-vault-pass -i inventory/hosts -t ovirt $* 02-ovhs_ovirt_s
 #ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
 
 #ansible-galaxy install -r roles/requirements.yml -p roles
+
+exit
+ovirt-hosted-engine-cleanup;rm -rf /var/tmp/localvm*;cat /etc/resolv.conf;vim /etc/hosts;systemctl restart dnsmasq;systemctl status dnsmasq
+
