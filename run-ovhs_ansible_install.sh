@@ -17,16 +17,19 @@ test -f ovhs/run-ovhs_ansible_install.sh || {
 #test -d /etc/ansible/roles/ovirt.hosted_engine_setup || ansible-galaxy install ovirt.hosted_engine_setup
 cd ovhs
 #ansible-playbook --vault-password-file ../vault_pass -i inventory/hosts --check 01-ovhs_base_setup.yml
-ansible-playbook --ask-vault-pass -i inventory/hosts -t networking $* 01-ovhs_base_setup.yml
+#ansible-playbook --ask-vault-pass -i inventory/hosts -t networking $* 01-ovhs_base_setup.yml
+ansible-playbook -i inventory/hosts -t networking $* 01-ovhs_base_setup.yml
 echo;echo "$0 done with networking part. Press any key."
 read ANSW
 
 ansible-playbook -i inventory/hosts 01b-check-resolve_conf.yml
 ssh-copy-id root@ovhs01-back || exit
 
-ansible-playbook --ask-vault-pass -i inventory/hosts -t storage $* 01-ovhs_base_setup.yml
+#ansible-playbook --ask-vault-pass -i inventory/hosts -t storage $* 01-ovhs_base_setup.yml
+ansible-playbook -i inventory/hosts -t storage $* 01-ovhs_base_setup.yml
 
-ansible-playbook --ask-vault-pass -i inventory/hosts -t ovirt $* 02-ovhs_ovirt_setup.yml
+#ansible-playbook --ask-vault-pass -i inventory/hosts -t ovirt $* 02-ovhs_ovirt_setup.yml
+ansible-playbook -i inventory/hosts -t ovirt $* 02-ovhs_ovirt_setup.yml
 
 #ansible-playbook hosted_engine_deploy.yml --extra-vars='@he_deployment.json' --extra-vars='@passwords.yml' --ask-vault-pass
 

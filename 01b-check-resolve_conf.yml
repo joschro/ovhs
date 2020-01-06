@@ -4,20 +4,21 @@
   hosts: ovhs_master
   connection: local
 
-- name: Add localhost to /etc/resolv.conf
-  lineinfile:
-    path: /etc/resolv.conf
-    regexp: '^nameserver 127.0.0.1'
-    line: "nameserver 127.0.0.1"
-    insertbefore: '^nameserver.*'
-    state: present
-    create: yes
+  tasks:
+  - name: Add localhost to /etc/resolv.conf
+    lineinfile:
+      path: /etc/resolv.conf
+      regexp: '^nameserver 127.0.0.1'
+      line: "nameserver 127.0.0.1"
+      insertbefore: '^nameserver.*'
+      state: present
+      create: yes
 
-- name: Change search to our local domain in /etc/resolv.conf
-  lineinfile:
-    path: /etc/resolv.conf
-    regexp: '^search.*'
-    line: "search {{ ovhs_domain_name }}"
-    insertbefore: '^nameserver.*'
-    state: present
-    create: yes
+  - name: Change search to our local domain in /etc/resolv.conf
+    lineinfile:
+      path: /etc/resolv.conf
+      regexp: '^search.*'
+      line: "search {{ ovhs_domain_name }}"
+      insertbefore: '^nameserver.*'
+      state: present
+      create: yes

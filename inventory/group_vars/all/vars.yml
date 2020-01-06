@@ -2,49 +2,50 @@
 
 # general variables
 ovhs_domain_name: ovhs.home
-ovhs_network_mgmt: "172.20"
-ovhs_network_back: "172.19"
-ovhs_network_dmz: "172.21"
+ovhs_network_mgmt: 172.20
+ovhs_network_back: 172.19
+ovhs_network_dmz: 172.21
 ntp_server: de.pool.ntp.org
 
 # host specific variables
-ovhs_host_master:      "ovhs01"
+ovhs_host_master:      ovhs01
 #ovhs_hostname_back: "{{ ovhs_hostname }}-back"
 #ovhs_hostname_dmz:  "{{ ovhs_hostname }}-dmz"
-ovhs_host_node02:      "ovhs02"
-ovhs_host_node03:      "ovhs03"
-ovhs_if_mgmt_master:       "enp2s0"
-ovhs_if_public_master:     "enp3s0"
-ovhs_if_back_master:       "enp4s1"
+ovhs_host_node02:      ovhs02
+ovhs_host_node03:      ovhs03
+ovhs_if_mgmt_master:       enp2s0
+ovhs_if_public_master:     enp3s0
+ovhs_if_back_master:       enp4s1
 ovhs_if_dmz_master:        "{{ ovhs_if_back_master }}.1"
 ovhs_ipv4_mgmt_master:     "{{ ovhs_network_mgmt }}.0.101"
-ovhs_ipv4_public_master:   "dhcp"
+ovhs_ipv4_public_master:   dhcp
 ovhs_ipv4_back_master:     "{{ ovhs_network_back }}.0.101"
 ovhs_ipv4_dmz_master:      "{{ ovhs_network_dmz }}.0.101"
 
 # hosted engine variables
-ovhs_host_engine:      "ovirtmgr"
-he_fqdn: "ovirtmgr.ovhs.home"
-he_bridge_if: "{{ ovhs_if_mgmt_master }}"
-he_domain_type: "glusterfs"
+ovhs_host_engine:      ovirtmgr
+he_fqdn: ovirtmgr.ovhs.home
+he_bridge_if: enp2s0
+he_domain_type: glusterfs
 #he_host_name: "ovirtmgr"
-he_host_name: "ovhs01"
-he_host_ip: "172.20.0.101"
-he_host_address: "{{ ovhs_ipv4_mgmt_master }}"
-he_ansible_host_name: "ovirtmgr.ovhs.home"
+he_host_name: ovhs01
+#he_host_ip: "172.20.0.101"
+he_host_address: 172.20.0.101
+#he_ansible_host_name: "{{ ovhs_host_master }}"
+he_ansible_host_name: ovhs01
 #he_vm_ip_addr: "{{ hostvars[engine]['ovhs_ipv4_mgmt'] }}"
-he_vm_ip_addr: "172.20.0.100"
-he_vm_ip_prefix: "24"
-he_vm_mac_addr: "00:a5:3f:66:ba:12"
-he_dns_addr: "172.20.0.101"
-he_default_gateway: "172.20.0.101"
+he_vm_ip_addr: 172.20.0.100
+he_vm_ip_prefix: 24
+#he_vm_mac_addr: "00:a5:3f:66:ba:12"
+he_dns_addr: 172.20.0.101
+he_default_gateway: 172.20.0.101
 he_vm_etc_hosts: false
 he_force_ip4: true
-he_vcpus: "2"
+he_vcpus: 2
 
 # storage specific variables
-ovhs_host_storage:      "gluster"
+ovhs_host_storage:      gluster
 #he_storage_domain_name: "HostedEngine"
 #he_storage_domain_addr: "172.21.0.101"
-he_storage_domain_addr: "{{ ovhs_ipv4_mgmt_master }}"
-he_storage_domain_path: "/engine"
+he_storage_domain_addr: ovhs01
+he_storage_domain_path: /engine
