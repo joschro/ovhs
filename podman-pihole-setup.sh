@@ -17,7 +17,7 @@
 # from https://monroec.com/?p=1408
 
 test $# -lt 1 && echo "Syntax: $0 <webpassword>" && exit
-serverIP="10.196.11.4"
+serverIP="192.168.188.2"
 
 ip li sh | grep cni-podman0 || ip link add cni-podman0 type bridge
 podman volume ls | grep pihole_pihole || podman volume create pihole_pihole
