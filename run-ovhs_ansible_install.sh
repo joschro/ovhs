@@ -1,9 +1,16 @@
 #!/bin/sh
 
+# from https://ovirt.org/documentation/gluster-hyperconverged/chap-Single_node_hyperconverged.html
+#ssh-keygen
+#ssh-copy-id root@ovhs.fritz.box
+#yum install http://resources.ovirt.org/pub/yum-repo/ovirt-release44.rpm
+#yum install gluster-ansible-roles cockpit-ovirt-dashboard vdsm-gluster ovirt-engine-appliance
+
 rpm -q git ansible ovirt-release44 || yum install -y git ansible http://resources.ovirt.org/pub/yum-repo/ovirt-release44.rpm
 rpm -q ansible || yum install -y ansible
 rpm -q epel-next-release || yum install -y epel-next-release
 rpm -q ovirt-hosted-engine-setup || yum install -y ovirt-hosted-engine-setup
+
 
 test -f ~/.ssh/id_rsa || ssh-keygen
 
