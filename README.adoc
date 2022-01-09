@@ -21,9 +21,9 @@ Now, as user `root` write the ISO image to an SD card / USB stick to boot the se
 
 Boot from SD card / USB stick and press the <TAB> key at "Install CentOS" selection; add
 ```
-ks=http://raw.githubusercontent.com/joschro/ovhs/master/ovhs-ks.cfg
+inst.ks=http://raw.githubusercontent.com/joschro/ovhs/master/ovhs-ks.cfg
 or easier
-ks=http://bit.ly/ovhs-ks
+inst.ks=http://bit.ly/ovhs-ks
 ```
 to the kernel command line parameters and press <ENTER>.
 
