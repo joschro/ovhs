@@ -1,13 +1,17 @@
 [all:vars]
 #ansible_host='{{ ovhs_hostname }}.{{ ovhs_domain_name }}'
-ansible_host=ovhs01.ovhs.home
+ansible_host=ovhs.ovhs.home
 
 [ovhs_master]
-ovhs01		ansible_connection=local
+ovhs		ansible_connection=local
+
+[ovhs_hosts]
+ovhs		ansible_connection=local
+ovhs[02:03]	ansible_connection=ssh		ansible_user=root
 
 [gluster_hosts]
-ovhs01		ansible_connection=local
-ovhs[02:03]	ansible_connection=ssh		ansible_user=root
+ovhs-storage	ansible_connection=local
+ovhs-storage[02:03]	ansible_connection=ssh		ansible_user=root
 gluster		ansible_connection=local
 
 [services]

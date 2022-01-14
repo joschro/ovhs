@@ -1,0 +1,15 @@
+---
+
+- name: configuration
+  template:
+    src: etc/
+    dest: /etc/
+    owner: root
+    group: root
+    mode: 0644
+    seuser: system_u
+    serole: object_r
+    setype: etc_t
+    selevel: s0
+  notify:
+    - 'template reload sysctl'

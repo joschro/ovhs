@@ -1,0 +1,5 @@
+---
+
+- name: template reload sysctl
+  command: '{{ template_sysctl_bin }} -p'
+

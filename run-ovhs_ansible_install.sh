@@ -1,7 +1,10 @@
 #!/bin/sh
 
 # generate ssh key
-sudo test -f ~/.ssh/id_rsa || sudo ssh-keygen
+sudo test -f /root/.ssh/id_rsa || sudo ssh-keygen
+test -f ~/.ssh/id_rsa || ssh-keygen
+
+sudo yum install -y ansible git vim
 
 cd ~
 test -f joschro/git-update.sh || git clone https://github.com/joschro/joschro.git
@@ -11,6 +14,7 @@ test -f ovhs/run-ovhs_ansible_install.sh || {
   exit
 }
 
+ansible-galaxy install lukas-bednar.nested_virtualization
 
 exit
 

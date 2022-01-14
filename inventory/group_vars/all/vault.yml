@@ -1,5 +1,5 @@
 ---
-# As an example this file is keep in plaintext, if you want to
+# As an example this file is kept in plaintext, if you want to
 # encrypt this file, please execute following command:
 #
 #  $ ansible-vault encrypt passwords.yml
