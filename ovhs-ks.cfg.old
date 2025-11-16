@@ -14,10 +14,10 @@ text
 # when using http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso:
 #cdrom
 # when using http://isoredirect.centos.org/centos/8/isos/x86_64/CentOS-8.5.2111-x86_64-boot.iso:
-#url --mirrorlist="http://mirrorlist.centos.org/?release=&arch=x86_64&repo=BaseOS&infra="
+#url --mirrorlist="http://mirrorlist.centos.org/?release=$releasever&arch=x86_64&repo=BaseOS&infra=$infra"
 # when using http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso:
-#url --mirrorlist="http://mirrorlist.centos.org/?release=-stream&arch=&repo=BaseOS&infra="
-url --metalink=https://mirrors.centos.org/metalink?repo=centos-baseos--stream&arch=&protocol=https
+#url --mirrorlist="http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=BaseOS&infra=$infra"
+url --metalink=https://mirrors.centos.org/metalink?repo=centos-baseos-$releasever-stream&arch=$basearch&protocol=https
 
 # disable kdump for testing purposes
 # %addon com_redhat_kdump --enable
@@ -32,6 +32,7 @@ skipx
 
 # Keyboard layouts
 #keyboard --vckeymap=de --xlayouts='de (nodeadkeys)'
+# Keyboard layouts
 keyboard --xlayouts='de (nodeadkeys)'
 
 # System language
@@ -40,7 +41,6 @@ lang en_US.UTF-8
 
 # Network information
 network  --hostname=ovhs --bootproto=dhcp --onboot=on --ipv6=auto --activate
-#network  --bootproto=dhcp --onboot=on --ipv6=auto --activate
 #network  --bootproto=dhcp --device=enp3s0 --ipv6=auto --activate
 #network  --bootproto=dhcp --device=enp4s1 --ipv6=auto
 #network --hostname=ovhs
@@ -48,12 +48,12 @@ network  --hostname=ovhs --bootproto=dhcp --onboot=on --ipv6=auto --activate
 # Root password
 # you can use "python -c 'import crypt; print(crypt.crypt("My Password", crypt.mksalt()))'" to create the hash on a linux command line
 # the below example reflects the password "ovhs"
-rootpw --iscrypted DVXePa2eKw4pukd.btAtrqcz4nt6Zu6qKs97r1
+rootpw --iscrypted $6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG610bMyqoUgNTI6h.btAtrqcz4nt6Zu6qKs97r1
 #  --allow-ssh
 #  --lock
 
 # add user ovhs
-user --name=ovhs --gecos="OVHS system user" --groups="wheel" --iscrypted --password="DVXePa2eKw4pukd.btAtrqcz4nt6Zu6qKs97r1"
+user --name=ovhs --gecos="OVHS system user" --groups="wheel" --iscrypted --password="$6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG610bMyqoUgNTI6h.btAtrqcz4nt6Zu6qKs97r1"
 
 # Firewall
 firewall --enabled --port=53
@@ -64,42 +64,34 @@ services --enabled="chronyd"
 
 # System timezone
 #timezone Europe/Berlin --utc --ntpserver 0.de.pool.ntp.org --ntpserver 1.de.pool.ntp.org --ntpserver 2.de.pool.ntp.org --ntpserver 3.de.pool.ntp.org
+
 timesource --ntp-server=0.de.pool.ntp.org
-timesource --ntp-server=1.de.pool.ntp.org
-timesource --ntp-server=2.de.pool.ntp.org
+# System timezone
 timezone Europe/Berlin --utc
-### MIRRORED HD INSTALL WITH OS&CACHE HD
-# Ignore all disks except the intended ones
+
 ignoredisk --only-use=sda,sdb,sdc
 # Partition clearing information
 #clearpart --none --initlabel
-clearpart --all --initlabel --drives=sda,sdb,sdc --all
-# Disk partitioning information
+clearpart --initlabel --drives=sda,sdb,sdc --all
+### Disk partitioning information
 # OS disk
-part /boot/efi --fstype="efi"   --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=1024 --fsoptions="umask=0077,shortname=    winnt"
+part /boot/efi --fstype="efi"   --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=1024 --fsoptions="umask=0077,shortname=winnt"
 part /boot     --fstype="ext4"  --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=4096
-part pv.1001   --fstype="lvmpv" --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=254806 --encrypted --luks-version=luks2     #--passphrase=1234567890
+part pv.1001   --fstype="lvmpv" --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=254806 --encrypted --luks-version=luks2 #--passphrase=1234567890
 part pv.1002   --fstype="lvmpv" --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=10000 --grow
-# Mirrored data disks
+# mirrored data disks
 part raid.0001 --fstype="mdmember" --ondisk=disk/by-id/scsi-SATA_TOSHIBA_HDWN180_X9I5K14AFAVG --size=100000 --grow
 part raid.0002 --fstype="mdmember" --ondisk=disk/by-id/scsi-SATA_TOSHIBA_HDWN180_X9I5K14BFAVG --size=100000 --grow
 raid pv.0012 --device=luks-pv00 --fstype="lvmpv" --level=RAID1 raid.0001 raid.0002
 
-### Volume Group information:
+### Logical Volume information:
 #volgroup ovhs_os --pesize=4096 pv.1001 --reserved-percent=20
 volgroup ovhs_os --pesize=4096 pv.1001
-
 # add cache pv to data volume group
 #volgroup ovhs_cache --pesize=4096 pv.1002
-
 volgroup ovhs_data --pesize=4096 pv.0012 pv.1002
 # create thick volumes:
-logvol /data          --vgname=ovhs_data --fstype="ext4" --size=102400 --encrypted --luks-version=luks2 --name=data --cachepvs=pv.1002 --cachemode=writeback --cachesize=200000 #--passphrase=1234567890
-### Logical Volume information:
-## create thick volumes:
-#logvol swap           --vgname=ovhs_os --fstype="swap" --size=16136 --name=swap
 logvol swap           --vgname=ovhs_os --fstype="swap" --size=16097 --name=swap
-#logvol /              --vgname=ovhs_os --fstype="ext4" --size=30000 --name=root
 logvol /              --vgname=ovhs_os --fstype="ext4" --size=71680 --name=root
 logvol /var           --vgname=ovhs_os --fstype="ext4" --size=20000 --name=var
 logvol /var/crash     --vgname=ovhs_os --fstype="ext4" --size=10000 --name=var_crash
@@ -107,16 +99,8 @@ logvol /var/log       --vgname=ovhs_os --fstype="ext4" --size=8000  --name=var_l
 logvol /var/log/audit --vgname=ovhs_os --fstype="ext4" --size=2000  --name=var_audit
 logvol /home          --vgname=ovhs_os --fstype="ext4" --size=10000 --name=home
 logvol /tmp           --vgname=ovhs_os --fstype="ext4" --size=2000  --name=tmp
+logvol /data          --vgname=ovhs_data --fstype="ext4" --size=102400 --encrypted --luks-version=luks2 --name=data --cachepvs=pv.1002 --cachemode=writeback --cachesize=200000 #--passphrase=1234567890
 
-## create above volumes as thin volumes:
-#logvol none            --vgname=ovhs_os --name=lvThinPool --thinpool --metadatasize=16000 --size=120000 --grow
-#logvol /               --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=30000 --name=root
-#logvol /var            --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=20000 --name=var
-#logvol /var/crash      --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=10000 --name=var_crash
-#logvol /var/log        --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=8000  --name=var_log
-#logvol /var/log/audit  --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=2000  --name=var_audit
-#logvol /home           --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=10000 --name=home
-#logvol /tmp            --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=2000  --name=tmp
 # Base Software installation:
 %packages
 @base
@@ -147,14 +131,16 @@ cockpit-ws
 #ctdb
 #git
 tmux
-#vim
 vim-enhanced
+
 %end
+###
+
 # self-hosted engine setup with gluster storage taken from
 # https://www.ovirt.org/documentation/gluster-hyperconverged/chap-Single_node_hyperconverged.html
 # http://community.redhat.com/blog/2014/10/up-and-running-with-ovirt-3-5/ and
 # http://community.redhat.com/blog/2014/11/up-and-running-with-ovirt-3-5-part-two/
-%post
+%post 
 # multipathd throws ugly errors, thus we blacklist the harddisks
 #cat >> /etc/multipath.conf <<EOF
 #
@@ -175,10 +161,12 @@ vim-enhanced
 #/bin/yum -y update
 systemctl enable cockpit.socket
 %end
+###
+
 # copy CentOS install ISO image to /home/tmp/ for later re-use
 #%post --nochroot
 #mkdir -p /mnt/sysimage/home/tmp
-#dd if= of=/mnt/sysimage/home/tmp/.iso bs=4M
+#dd if=$(df | grep "/run/install" | head -n1 | cut -d" " -f1) of=/mnt/sysimage/home/tmp/$(blkid -o value $(df | grep "/run/install" | head -n1 | cut -d" " -f1) | grep -i CentOS).iso bs=4M
 #%end
 
 # automatically start oVirtHomeServer installation via ansible (deactivated, just download setup script)
@@ -195,4 +183,3 @@ systemctl enable cockpit.socket
 %end
 
 reboot
-
