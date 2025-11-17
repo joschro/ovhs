@@ -18,6 +18,7 @@ usage() {
 # Default values
 VERBOSE=false
 OUTPUT_FILE="ovhs-ks.cfg"
+ROOT_PWD='$6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG610bMyqoUgNTI6h.btAtrqcz4nt6Zu6qKs97r1'
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -146,12 +147,12 @@ network  --hostname=ovhs --bootproto=dhcp --onboot=on --ipv6=auto --activate
 # Root password
 # you can use "python -c 'import crypt; print(crypt.crypt("My Password", crypt.mksalt()))'" to create the hash on a linux command line
 # the below example reflects the password "ovhs"
-rootpw --iscrypted '$6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG610bMyqoUgNTI6h.btAtrqcz4nt6Zu6qKs97r1'
+rootpw --iscrypted $ROOT_PWD
 #  --allow-ssh
 #  --lock
 
 # add user ovhs
-user --name=ovhs --gecos="OVHS system user" --groups="wheel" --iscrypted --password='$6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG610bMyqoUgNTI6h.btAtrqcz4nt6Zu6qKs97r1'
+user --name=ovhs --gecos="OVHS system user" --groups="wheel" --iscrypted --password=$ROOT_PWD
 
 # Firewall
 firewall --enabled --port=53
