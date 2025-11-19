@@ -230,11 +230,14 @@ part biosboot --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI booting only
-part /boot/efi --fstype="efi" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=500 --label=EFI
+#part /boot/efi --fstype="efi" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=500 --label=EFI
+part /boot/efi --fstype="efi" --ondisk=sda --asprimary --size=500 --label=EFI
 EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part /boot    --fstype="ext4"      --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=2048 --label=boot
-part pv.01 --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
+#part /boot    --fstype="ext4"      --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=2048 --label=boot
+part /boot    --fstype="ext4"      --ondisk=sda --asprimary --size=2048 --label=boot
+#part pv.01 --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
+part pv.01 --ondisk=sda --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
 EOF
 
 test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
@@ -373,8 +376,8 @@ cockpit-ws
 #ctdb
 #git
 tmux
-#vim
-vim-enhanced
+vim
+#vim-enhanced
 %end
 EOF
 
