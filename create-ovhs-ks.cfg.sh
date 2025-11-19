@@ -12,6 +12,12 @@ usage() {
     echo "  -f, --file FILE 						Specify output file"
     echo "  -b, --bootmode <bios|uefi>					Specify boot mode"
     echo "  -d, --diskmode <single_hd|mirrored_hd|mirrored_cached_hd>	Specify disk mode"
+    echo "  -hdd1 <HDD1>						HDD1 identifier"
+    echo "  -hdd2 <HDD2>						HDD2 identifier"
+    echo "  -hdd3 <HDD3>						HDD3 identifier"
+    echo
+    echo "with HDDx being one of the harddisk identifiers from the output of"
+    echo '$ ls -1 /dev/disk/by-id/scsi-SATA_* | sed "s/.*scsi-\(.*\)/\1/g;s/-.*//g"|sort -u'
     exit 1
 }
 
@@ -24,47 +30,74 @@ ROOT_PWD='$6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG61
 while [[ $# -gt 0 ]]; do
     case $1 in
         -h|--help)
-            usage
-            ;;
+		usage
+		;;
         -v|--verbose)
-            VERBOSE=true
-            shift
-            ;;
+            	VERBOSE=true
+            	shift
+            	;;
         -f|--file)
-            if [[ -n "$2" ]]; then
-                OUTPUT_FILE="$2"
-                shift 2
-            else
-                echo "Error: --file requires an argument." >&2
-                usage
-            fi
-            ;;
+            	if [[ -n "$2" ]]; then
+                	OUTPUT_FILE="$2"
+                	shift 2
+            	else
+                	echo "Error: --file requires an argument." >&2
+                	usage
+            	fi
+            	;;
 	-b|--bootmode)
-	    if [[ -n "$2" ]]; then
-                BOOT_MODE="$2"
-                shift 2
-            else
-                echo "Error: --bootmode requires an argument." >&2
-                usage
-            fi  
-            ;;
+	    	if [[ -n "$2" ]]; then
+                	BOOT_MODE="$2"
+                	shift 2
+            	else
+                	echo "Error: --bootmode requires an argument." >&2
+                	usage
+            	fi  
+            	;;
 	-d|--diskmode)
-	    if [[ -n "$2" ]]; then
-                DISK_MODE="$2"
-                shift 2
-            else
-                echo "Error: --diskmode requires an argument." >&2
-                usage
-            fi 
-            ;;
+	    	if [[ -n "$2" ]]; then
+                	DISK_MODE="$2"
+                	shift 2
+            	else
+                	echo "Error: --diskmode requires an argument." >&2
+                	usage
+            	fi 
+            	;;
+	-hdd1|--hdd1)
+	    	if [[ -n "$2" ]]; then
+		       	HDD_1="$2"
+        	       	shift 2
+		else
+	               	echo "Error: --hdd1 requires an argument." >&2
+	              	usage
+		fi
+		;;
+	-hdd2|--hdd2)
+	    	if [[ -n "$2" ]]; then
+		      	HDD_2="$2"
+	              	shift 2
+	        else
+	               	echo "Error: --hdd2 requires an argument." >&2
+	              	usage
+	        fi
+	        ;;
+	-hdd3|--hdd3)
+	    	if [[ -n "$2" ]]; then
+		       	HDD_3="$2"
+	              	shift 2
+		else
+	               	echo "Error: --hdd3 requires an argument." >&2
+	              	usage
+	        fi
+	        ;;
         -*)
-            echo "Error: Unknown option $1" >&2
-            usage
-            ;;
+            	echo "Error: Unknown option $1" >&2
+            	usage
+            	;;
         *)
-            echo "Error: Unknown argument $1" >&2
-            usage
-            ;;
+            	echo "Error: Unknown argument $1" >&2
+            	usage
+            	;;
     esac
 done
 
@@ -80,7 +113,22 @@ if [[ "$BOOT_MODE" != "bios" && "$BOOT_MODE" != "uefi" ]]; then
 fi
 
 if [[ "$DISK_MODE" != "single_hd" && "$DISK_MODE" != "mirrored_hd" && "$DISK_MODE" != "mirrored_cached_hd" ]]; then
-    echo "Error: --bootmode <single_hd|mirrored_hd|mirrored_cached_hd> is required." >&2
+    echo "Error: --diskmode <single_hd|mirrored_hd|mirrored_cached_hd> is required." >&2
+    usage
+fi
+
+if [[ -z "$HDD_1" ]]; then
+    echo "Error: --hdd1 is required." >&2
+    usage
+fi
+
+if [[ "$DISK_MODE" = "mirrored_hd" && -z "$HDD_2" ]]; then
+    echo "Error: --hdd2 is required." >&2
+    usage
+fi
+
+if [[ "$DISK_MODE" = "mirrored_cached_hd" && ( -z "$HDD_2" || -z "$HDD_3" ) ]]; then
+    echo "Error: --hdd2 is required." >&2
     usage
 fi
 
@@ -130,15 +178,14 @@ firstboot --enable
 skipx
 
 # Keyboard layouts
-#keyboard --vckeymap=de --xlayouts='de (nodeadkeys)'
-keyboard --xlayouts='de (nodeadkeys)'
+keyboard --vckeymap=de-nodeadkeys --xlayouts='de (nodeadkeys)'
 
 # System language
 #lang de_DE.UTF-8
 lang en_US.UTF-8
 
 # Network information
-network  --hostname=ovhs --bootproto=dhcp --onboot=on --ipv6=auto --activate
+network  --hostname=ovhs --bootproto=dhcp --device=link --onboot=on --ipv6=auto --activate
 #network  --bootproto=dhcp --onboot=on --ipv6=auto --activate
 #network  --bootproto=dhcp --device=enp3s0 --ipv6=auto --activate
 #network  --bootproto=dhcp --device=enp4s1 --ipv6=auto
@@ -155,37 +202,39 @@ rootpw --iscrypted $ROOT_PWD
 user --name=ovhs --gecos="OVHS system user" --groups="wheel" --iscrypted --password=$ROOT_PWD
 
 # Firewall
-firewall --enabled --port=53
+firewall --enabled --port=53:tcp
 
 # System services
 #services --enabled="chronyd,systemd-resolved"
 services --enabled="chronyd"
 
-# System timezone
-#timezone Europe/Berlin --utc --ntpserver 0.de.pool.ntp.org --ntpserver 1.de.pool.ntp.org --ntpserver 2.de.pool.ntp.org --ntpserver 3.de.pool.ntp.org
 timesource --ntp-server=0.de.pool.ntp.org
 timesource --ntp-server=1.de.pool.ntp.org
 timesource --ntp-server=2.de.pool.ntp.org
+# System timezone
+#timezone Europe/Berlin --utc --ntpserver 0.de.pool.ntp.org --ntpserver 1.de.pool.ntp.org --ntpserver 2.de.pool.ntp.org --ntpserver 3.de.pool.ntp.org
 timezone Europe/Berlin --utc
 EOF
 
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ### SINGLE HD INSTALL:
 # Ignore all disks except the intended ones
-#ignoredisk --only-use=sda
+ignoredisk --only-use=sda
 # Partition clearing information
-#clearpart --all --initlabel --drives=sda
+clearpart --all --initlabel --drives=sda
 ## Disk partitioning information
+EOF
+test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
-# <---
-#part biosboot_sda --fstype="biosboot" --ondisk=sda --asprimary --size=1
-#part /boot     --fstype="xfs" --ondisk=sda --asprimary --size=1024
-# --->
+part biosboot --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1 --label=biosboot
+EOF
+test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI booting only
-# <---
-#part /boot/efi --fstype="efi" --ondisk=sda --asprimary --size=200
-#part pv.01 --ondisk=sda --asprimary --size=100000 --grow --encrypted --passphrase=1234567890
-# --->
+part /boot/efi --fstype="efi" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=500 --label=EFI
+EOF
+test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
+part /boot    --fstype="ext4"      --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=2048 --label=boot
+part pv.01 --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
 EOF
 
 test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
@@ -195,32 +244,44 @@ ignoredisk --only-use=sda,sdb
 # Partition clearing information
 clearpart --all --initlabel --drives=sda,sdb
 # Disk partitioning information
-# <---
+EOF
+test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
-#part biosboot_sda --fstype="biosboot" --ondisk=sda --asprimary --size=1
-#part biosboot_sdb --fstype="biosboot" --ondisk=sdb --asprimary --size=1
-# --->
-part raid.01 --fstype="mdmember" --ondisk=sda --asprimary --size=1024
-part raid.02 --fstype="mdmember" --ondisk=sdb --asprimary --size=1024
 # <---
+part biosboot_sda --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1
+part biosboot_sdb --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=1
+# --->
+EOF
+test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
+part raid.01 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1024
+part raid.02 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=1024
+EOF
+test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI boot only
-part raid.11 --fstype="mdmember" --ondisk=sda --asprimary --size=256
-part raid.12 --fstype="mdmember" --ondisk=sdb --asprimary --size=256
+# <---
+part raid.11 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=256
+part raid.12 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=256
 # --->
 EOF
 
-test "$DISK_MODE" = "single_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part raid.21 --fstype="mdmember" --ondisk=sda --asprimary --size=200000
-part raid.22 --fstype="mdmember" --ondisk=sdb --asprimary --size=200000
-part raid.31 --fstype="mdmember" --ondisk=sda --asprimary --size=100000 --grow
-part raid.32 --fstype="mdmember" --ondisk=sdb --asprimary --size=100000 --grow
+test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
+part raid.21 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=200000
+part raid.22 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=200000
+part raid.31 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=100000 --grow
+part raid.32 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=100000 --grow
 raid /boot --device=boot --fstype="ext4" --level=1 raid.01 raid.02
-# <---
+EOF
+test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI boot only
+# <---
 raid /boot/efi --device=boot_efi --fstype="efi" --level=1 --fsoptions="umask=0077,shortname=winnt" raid.11 raid.12
 # --->
+EOF
+test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
 raid pv.01 --device=md1 --level=1 raid.21 raid.22 --encrypted --passphrase=1234567890
 raid pv.02 --device=md2 --level=1 raid.31 raid.32
+EOF
+test "$DISK_MODE" = "single_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
 volgroup ovhs_os --pesize=4096 pv.01 --reserved-percent=20
 EOF
 
@@ -233,13 +294,15 @@ ignoredisk --only-use=sda,sdb,sdc
 clearpart --all --initlabel --drives=sda,sdb,sdc --all
 # Disk partitioning information
 # OS disk
-part /boot/efi --fstype="efi"   --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=1024 --fsoptions="umask=0077,shortname=    winnt"
-part /boot     --fstype="ext4"  --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=4096
-part pv.1001   --fstype="lvmpv" --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=254806 --encrypted --luks-version=luks2     #--passphrase=1234567890
-part pv.1002   --fstype="lvmpv" --ondisk=disk/by-id/scsi-SATA_Samsung_SSD_860_S4XBNJ0N604366Y --asprimary --size=10000 --grow
+EOF
+test "$DISK_MODE" = "mirrored_cached_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
+part /boot/efi --fstype="efi"   --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1024 --fsoptions="umask=0077,shortname=    winnt"
+part /boot     --fstype="ext4"  --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=4096
+part pv.1001   --fstype="lvmpv" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=254806 --encrypted --luks-version=luks2     #--passphrase=1234567890
+part pv.1002   --fstype="lvmpv" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=10000 --grow
 # Mirrored data disks
-part raid.0001 --fstype="mdmember" --ondisk=disk/by-id/scsi-SATA_TOSHIBA_HDWN180_X9I5K14AFAVG --size=100000 --grow
-part raid.0002 --fstype="mdmember" --ondisk=disk/by-id/scsi-SATA_TOSHIBA_HDWN180_X9I5K14BFAVG --size=100000 --grow
+part raid.0001 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --size=100000 --grow
+part raid.0002 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --size=100000 --grow
 raid pv.0012 --device=luks-pv00 --fstype="lvmpv" --level=RAID1 raid.0001 raid.0002
 
 ### Volume Group information:
