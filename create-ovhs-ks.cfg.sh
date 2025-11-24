@@ -219,24 +219,25 @@ EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ### SINGLE HD INSTALL:
 # Ignore all disks except the intended ones
-ignoredisk --only-use=sda
+ignoredisk --only-use=disk/by-id/scsi-$HDD_1
 # Partition clearing information
-clearpart --all --initlabel --drives=sda
+clearpart --all --initlabel --drives=sd*|disk/by-id/scsi-$HDD_1
+#zerombr
 ## Disk partitioning information
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
-bootloader --location=mbr --boot-drive=sda
-part biosboot --fstype="biosboot" --ondisk=/disk/by-id/scsi-$HDD_1 --asprimary --size=1 --label=biosboot
+bootloader --location=mbr --boot-drive=disk/by-id/scsi-$HDD_1
+part biosboot --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1 --label=biosboot
 #part biosboot --fstype="biosboot" --ondisk=sda --asprimary --size=1 --label=biosboot
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI booting only
-part /boot/efi --fstype="efi" --ondisk=/disk/by-id/scsi-$HDD_1 --asprimary --size=500 --label=EFI
+part /boot/efi --fstype="efi" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=500 --label=EFI
 #part /boot/efi --fstype="efi" --ondisk=sda --asprimary --size=500 --label=EFI
 EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part /boot    --fstype="ext4"      --ondisk=/disk/by-id/scsi-$HDD_1 --asprimary --size=2048 --label=boot
+part /boot    --fstype="ext4"      --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=2048 --label=boot
 #part /boot    --fstype="ext4"      --ondisk=sda --asprimary --size=2048 --label=boot
 part pv.01 --ondisk=/disk/by-id/scsi-$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
 #part pv.01 --ondisk=sda --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
