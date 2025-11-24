@@ -226,7 +226,8 @@ clearpart --all --initlabel --drives=sda
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
-part biosboot --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1 --label=biosboot
+#part biosboot --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1 --label=biosboot
+part biosboot --fstype="biosboot" --ondisk=sda --asprimary --size=1 --label=biosboot
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI booting only
