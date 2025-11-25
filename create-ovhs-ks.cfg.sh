@@ -224,6 +224,7 @@ ignoredisk --only-use=$HDD_1
 clearpart --all --initlabel --drives=$HDD_1
 #zerombr
 ## Disk partitioning information
+#reqpart --add-boot
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
@@ -232,6 +233,7 @@ part biosboot --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=b
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI booting only
+bootloader --location=mbr --boot-drive=$HDD_1
 part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=500 --label=EFI
 EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
