@@ -65,7 +65,7 @@ while [[ $# -gt 0 ]]; do
             	;;
 	-hdd1|--hdd1)
 	    	if [[ -n "$2" ]]; then
-		       	HDD_1="$2"
+		       	HDD_1="disk/by-id/scsi-$2"
         	       	shift 2
 		else
 	               	echo "Error: --hdd1 requires an argument." >&2
@@ -74,7 +74,7 @@ while [[ $# -gt 0 ]]; do
 		;;
 	-hdd2|--hdd2)
 	    	if [[ -n "$2" ]]; then
-		      	HDD_2="$2"
+		      	HDD_2="disk/by-id/scsi-$2"
 	              	shift 2
 	        else
 	               	echo "Error: --hdd2 requires an argument." >&2
@@ -83,7 +83,7 @@ while [[ $# -gt 0 ]]; do
 	        ;;
 	-hdd3|--hdd3)
 	    	if [[ -n "$2" ]]; then
-		       	HDD_3="$2"
+		       	HDD_3="disk/by-id/scsi-$2"
 	              	shift 2
 		else
 	               	echo "Error: --hdd3 requires an argument." >&2
@@ -219,62 +219,58 @@ EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ### SINGLE HD INSTALL:
 # Ignore all disks except the intended ones
-ignoredisk --only-use=disk/by-id/scsi-$HDD_1
+ignoredisk --only-use=$HDD_1
 # Partition clearing information
-clearpart --all --initlabel --drives=sd*|disk/by-id/scsi-$HDD_1
+clearpart --all --initlabel --drives=$HDD_1
 #zerombr
 ## Disk partitioning information
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
-bootloader --location=mbr --boot-drive=disk/by-id/scsi-$HDD_1
-part biosboot --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1 --label=biosboot
-#part biosboot --fstype="biosboot" --ondisk=sda --asprimary --size=1 --label=biosboot
+bootloader --location=mbr --boot-drive=$HDD_1
+part biosboot --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=biosboot
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI booting only
-part /boot/efi --fstype="efi" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=500 --label=EFI
-#part /boot/efi --fstype="efi" --ondisk=sda --asprimary --size=500 --label=EFI
+part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=500 --label=EFI
 EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part /boot    --fstype="ext4"      --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=2048 --label=boot
-#part /boot    --fstype="ext4"      --ondisk=sda --asprimary --size=2048 --label=boot
-part pv.01 --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
-#part pv.01 --ondisk=sda --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
+part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=2048 --label=boot
+part pv.01 --ondisk=$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
 EOF
 
 test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ### MIRRORED HD INSTALL:
 # Ignore all disks except the intended ones
-ignoredisk --only-use=sda,sdb
+ignoredisk --only-use=$HDD_1,$HDD_2
 # Partition clearing information
-clearpart --all --initlabel --drives=sda,sdb
+clearpart --all --initlabel --drives=$HDD_1,$HDD_2
 # Disk partitioning information
 EOF
 test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
 # <---
-part biosboot_sda --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1
-part biosboot_sdb --fstype="biosboot" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=1
+part biosboot_hd1 --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1
+part biosboot_hd2 --fstype="biosboot" --ondisk=$HDD_2 --asprimary --size=1
 # --->
 EOF
 test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part raid.01 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1024
-part raid.02 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=1024
+part raid.01 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=1024
+part raid.02 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=1024
 EOF
 test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI boot only
 # <---
-part raid.11 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=256
-part raid.12 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=256
+part raid.11 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=256
+part raid.12 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=256
 # --->
 EOF
 
 test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part raid.21 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=200000
-part raid.22 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=200000
-part raid.31 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=100000 --grow
-part raid.32 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --asprimary --size=100000 --grow
+part raid.21 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=200000
+part raid.22 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=200000
+part raid.31 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=100000 --grow
+part raid.32 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=100000 --grow
 raid /boot --device=boot --fstype="ext4" --level=1 raid.01 raid.02
 EOF
 test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
