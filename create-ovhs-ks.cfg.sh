@@ -222,7 +222,7 @@ test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ignoredisk --only-use=$HDD_1
 # Partition clearing information
 clearpart --all --initlabel --drives=$HDD_1
-#zerombr
+zerombr
 ## Disk partitioning information
 #reqpart --add-boot
 EOF
