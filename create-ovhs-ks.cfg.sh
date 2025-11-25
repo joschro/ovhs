@@ -239,7 +239,7 @@ EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 part /boot    --fstype="ext4"      --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=2048 --label=boot
 #part /boot    --fstype="ext4"      --ondisk=sda --asprimary --size=2048 --label=boot
-part pv.01 --ondisk=/disk/by-id/scsi-$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
+part pv.01 --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
 #part pv.01 --ondisk=sda --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
 EOF
 
