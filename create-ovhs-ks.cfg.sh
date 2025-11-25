@@ -380,7 +380,7 @@ logvol /var/crash     --vgname=$VG_OS --fstype="ext4" --size=$VAR_CRASH_SIZE_MB 
 logvol /var/log       --vgname=$VG_OS --fstype="ext4" --size=$VAR_LOG_SIZE_MB  --name=var_log
 logvol /var/log/audit --vgname=$VG_OS --fstype="ext4" --size=$VAR_LOG_AUDIT_SIZE_MB  --name=var_audit
 logvol /home          --vgname=$VG_OS --fstype="ext4" --size=$HOME_SIZE_MB --name=home
-logvol /tmp           --vgname=$VG_OS --fstype="ext4" --size$TMP_SIZE_MB  --name=tmp
+logvol /tmp           --vgname=$VG_OS --fstype="ext4" --size=$TMP_SIZE_MB  --name=tmp
 
 EOF
 
