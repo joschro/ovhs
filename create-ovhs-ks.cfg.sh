@@ -15,6 +15,7 @@ usage() {
     echo "  -hdd1 <HDD1>						HDD1 identifier"
     echo "  -hdd2 <HDD2>						HDD2 identifier"
     echo "  -hdd3 <HDD3>						HDD3 identifier"
+    echo "  --data <keep|destroy>					Confirm to keep or delete all data on disks"
     echo
     echo "with HDDx being one of the harddisk identifiers from the output of"
     echo '$ ls -1 /dev/disk/by-id/scsi-SATA_* | sed "s/.*scsi-\(.*\)/\1/g;s/-.*//g"|sort -u'
@@ -90,6 +91,15 @@ while [[ $# -gt 0 ]]; do
 	              	usage
 	        fi
 	        ;;
+	--data)
+	    	if [[ -n "$2" ]]; then
+                	DATA_MODE="$2"
+                	shift 2
+            	else
+                	echo "Error: --data requires an argument." >&2
+                	usage
+            	fi  
+            	;;
         -*)
             	echo "Error: Unknown option $1" >&2
             	usage
@@ -132,11 +142,17 @@ if [[ "$DISK_MODE" = "mirrored_cached_hd" && ( -z "$HDD_2" || -z "$HDD_3" ) ]]; 
     usage
 fi
 
+if [[ "$DATA_MODE" != "keep" && "$DATA_MODE" != "destroy" ]]; then
+    echo "Error: --data <keep|destroy> is required." >&2
+    usage
+fi
+
 # Main script logic
 if [[ "$VERBOSE" == true ]]; then
     echo "Creating file: $OUTPUT_FILE"
     echo "BOOT_MODE: $BOOT_MODE"
     echo "DISK_MODE: $DISK_MODE"
+    echo "DATA_MODE: $DATA_MODE"
 fi
 
 # Reset output file
@@ -216,12 +232,17 @@ timesource --ntp-server=2.de.pool.ntp.org
 timezone Europe/Berlin --utc
 EOF
 
+test "$DATA_MODE" = "destroy" && cat >> "$OUTPUT_FILE" <<EOF
+clearpart --all --initlabel
+zerombr
+EOF
+
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ### SINGLE HD INSTALL:
 # Ignore all disks except the intended ones
 ignoredisk --only-use=$HDD_1
 # Partition clearing information
-clearpart --all --initlabel --drives=$HDD_1
+clearpart --all --initlabel --drives=sd*|$HDD_1
 zerombr
 ## Disk partitioning information
 #reqpart --add-boot
