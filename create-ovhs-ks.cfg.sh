@@ -26,6 +26,19 @@ usage() {
 VERBOSE=false
 OUTPUT_FILE="ovhs-ks.cfg"
 ROOT_PWD='$6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG610bMyqoUgNTI6h.btAtrqcz4nt6Zu6qKs97r1'
+VG_OS="cs_ovhs"
+VG_DATA="ovhs_data"
+VG_CACHE="ovhs_cache"
+BOOT_SIZE_MB=2048
+EFI_SIZE_MB=500
+HOME_SIZE_MB=10000
+ROOT_SIZE_MB=71680
+SWAP_SIZE_MB=16097
+TMP_SIZE_MB=2000
+VAR_SIZE_MB=20000
+VAR_CRASH_SIZE_MB=10000
+VAR_LOG_SIZE_MB=8000
+VAR_LOG_AUDIT_SIZE_MB=2000
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -230,36 +243,41 @@ timesource --ntp-server=2.de.pool.ntp.org
 # System timezone
 #timezone Europe/Berlin --utc --ntpserver 0.de.pool.ntp.org --ntpserver 1.de.pool.ntp.org --ntpserver 2.de.pool.ntp.org --ntpserver 3.de.pool.ntp.org
 timezone Europe/Berlin --utc
+
 EOF
 
 test "$DATA_MODE" = "destroy" && cat >> "$OUTPUT_FILE" <<EOF
 clearpart --all --initlabel
 zerombr
-EOF
 
-test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
+EOF
+test "$DISK_MODE" = "single_hd" && test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
 ### SINGLE HD INSTALL:
 # Ignore all disks except the intended ones
 ignoredisk --only-use=$HDD_1
 # Partition clearing information
-clearpart --all --initlabel --drives=sd*|$HDD_1
+clearpart --all --initlabel --drives=$HDD_1
 zerombr
 ## Disk partitioning information
 #reqpart --add-boot
+
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
 bootloader --location=mbr --boot-drive=$HDD_1
 part biosboot --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=biosboot
+
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI booting only
 bootloader --location=mbr --boot-drive=$HDD_1
-part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=500 --label=EFI
+part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB --label=EFI
+
 EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=2048 --label=boot
+part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB --label=boot
 part pv.01 --ondisk=$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
+
 EOF
 
 test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
@@ -269,6 +287,7 @@ ignoredisk --only-use=$HDD_1,$HDD_2
 # Partition clearing information
 clearpart --all --initlabel --drives=$HDD_1,$HDD_2
 # Disk partitioning information
+
 EOF
 test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
@@ -276,17 +295,20 @@ test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTP
 part biosboot_hd1 --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1
 part biosboot_hd2 --fstype="biosboot" --ondisk=$HDD_2 --asprimary --size=1
 # --->
+
 EOF
 test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part raid.01 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=1024
-part raid.02 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=1024
+part raid.01 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB
+part raid.02 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=$BOOT_SIZE_MB
+
 EOF
 test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI boot only
 # <---
-part raid.11 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=256
-part raid.12 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=256
+part raid.11 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB
+part raid.12 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=$EFI_SIZE_MB
 # --->
+
 EOF
 
 test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
@@ -295,19 +317,23 @@ part raid.22 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=200000
 part raid.31 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=100000 --grow
 part raid.32 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=100000 --grow
 raid /boot --device=boot --fstype="ext4" --level=1 raid.01 raid.02
+
 EOF
 test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI boot only
 # <---
 raid /boot/efi --device=boot_efi --fstype="efi" --level=1 --fsoptions="umask=0077,shortname=winnt" raid.11 raid.12
 # --->
+
 EOF
 test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
 raid pv.01 --device=md1 --level=1 raid.21 raid.22 --encrypted --passphrase=1234567890
 raid pv.02 --device=md2 --level=1 raid.31 raid.32
+
 EOF
 test "$DISK_MODE" = "single_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
-volgroup ovhs_os --pesize=4096 pv.01 --reserved-percent=20
+volgroup $VG_OS --pesize=4096 pv.01 --reserved-percent=20
+
 EOF
 
 test "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
@@ -319,10 +345,11 @@ ignoredisk --only-use=sda,sdb,sdc
 clearpart --all --initlabel --drives=sda,sdb,sdc --all
 # Disk partitioning information
 # OS disk
+
 EOF
 test "$DISK_MODE" = "mirrored_cached_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
-part /boot/efi --fstype="efi"   --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=1024 --fsoptions="umask=0077,shortname=    winnt"
-part /boot     --fstype="ext4"  --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=4096
+part /boot/efi --fstype="efi"   --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=$EFI_SIZE_MB --fsoptions="umask=0077,shortname=    winnt"
+part /boot     --fstype="ext4"  --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=$BOOT_SIZE_MB
 part pv.1001   --fstype="lvmpv" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=254806 --encrypted --luks-version=luks2     #--passphrase=1234567890
 part pv.1002   --fstype="lvmpv" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=10000 --grow
 # Mirrored data disks
@@ -331,41 +358,41 @@ part raid.0002 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --size=100000
 raid pv.0012 --device=luks-pv00 --fstype="lvmpv" --level=RAID1 raid.0001 raid.0002
 
 ### Volume Group information:
-#volgroup ovhs_os --pesize=4096 pv.1001 --reserved-percent=20
-volgroup ovhs_os --pesize=4096 pv.1001
+#volgroup $VG_OS --pesize=4096 pv.1001 --reserved-percent=20
+volgroup $VG_OS --pesize=4096 pv.1001
 
 # add cache pv to data volume group
-#volgroup ovhs_cache --pesize=4096 pv.1002
+#volgroup $VG_CACHE --pesize=4096 pv.1002
 
-volgroup ovhs_data --pesize=4096 pv.0012 pv.1002
+volgroup $VG_DATA --pesize=4096 pv.0012 pv.1002
 # create thick volumes:
-logvol /data          --vgname=ovhs_data --fstype="ext4" --size=102400 --encrypted --luks-version=luks2 --name=data --cachepvs=pv.1002 --cachemode=writeback --cachesize=200000 #--passphrase=1234567890
+logvol /data          --vgname=$VG_DATA --fstype="ext4" --size=102400 --encrypted --luks-version=luks2 --name=data --cachepvs=pv.1002 --cachemode=writeback --cachesize=200000 #--passphrase=1234567890
+
 EOF
 
 cat >> "$OUTPUT_FILE" <<EOF
 ### Logical Volume information:
 ## create thick volumes:
-#logvol swap           --vgname=ovhs_os --fstype="swap" --size=16136 --name=swap
-logvol swap           --vgname=ovhs_os --fstype="swap" --size=16097 --name=swap
-#logvol /              --vgname=ovhs_os --fstype="ext4" --size=30000 --name=root
-logvol /              --vgname=ovhs_os --fstype="ext4" --size=71680 --name=root
-logvol /var           --vgname=ovhs_os --fstype="ext4" --size=20000 --name=var
-logvol /var/crash     --vgname=ovhs_os --fstype="ext4" --size=10000 --name=var_crash
-logvol /var/log       --vgname=ovhs_os --fstype="ext4" --size=8000  --name=var_log
-logvol /var/log/audit --vgname=ovhs_os --fstype="ext4" --size=2000  --name=var_audit
-logvol /home          --vgname=ovhs_os --fstype="ext4" --size=10000 --name=home
-logvol /tmp           --vgname=ovhs_os --fstype="ext4" --size=2000  --name=tmp
+logvol swap           --vgname=$VG_OS --fstype="swap" --size=16097 --name=swap
+logvol /              --vgname=$VG_OS --fstype="ext4" --size=$ROOT_SIZE_MB --name=root
+logvol /var           --vgname=$VG_OS --fstype="ext4" --size=$VAR_SIZE_MB --name=var
+logvol /var/crash     --vgname=$VG_OS --fstype="ext4" --size=$VAR_CRASH_SIZE_MB --name=var_crash
+logvol /var/log       --vgname=$VG_OS --fstype="ext4" --size=$VAR_LOG_SIZE_MB  --name=var_log
+logvol /var/log/audit --vgname=$VG_OS --fstype="ext4" --size=$VAR_LOG_AUDIT_SIZE_MB  --name=var_audit
+logvol /home          --vgname=$VG_OS --fstype="ext4" --size=$HOME_SIZE_MB --name=home
+logvol /tmp           --vgname=$VG_OS --fstype="ext4" --size$TMP_SIZE_MB  --name=tmp
+
+EOF
 
 ## create above volumes as thin volumes:
-#logvol none            --vgname=ovhs_os --name=lvThinPool --thinpool --metadatasize=16000 --size=120000 --grow
-#logvol /               --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=30000 --name=root
-#logvol /var            --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=20000 --name=var
-#logvol /var/crash      --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=10000 --name=var_crash
-#logvol /var/log        --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=8000  --name=var_log
-#logvol /var/log/audit  --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=2000  --name=var_audit
-#logvol /home           --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=10000 --name=home
-#logvol /tmp            --vgname=ovhs_os --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=2000  --name=tmp
-EOF
+#logvol none            --vgname=$VG_OS --name=lvThinPool --thinpool --metadatasize=16000 --size=120000 --grow
+#logvol /               --vgname=$VG_OS --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=30000 --name=root
+#logvol /var            --vgname=$VG_OS --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=20000 --name=var
+#logvol /var/crash      --vgname=$VG_OS --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=10000 --name=var_crash
+#logvol /var/log        --vgname=$VG_OS --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=8000  --name=var_log
+#logvol /var/log/audit  --vgname=$VG_OS --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=2000  --name=var_audit
+#logvol /home           --vgname=$VG_OS --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=10000 --name=home
+#logvol /tmp            --vgname=$VG_OS --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=2000  --name=tmp
 
 cat >> "$OUTPUT_FILE" <<EOF
 # Base Software installation:
@@ -401,6 +428,7 @@ tmux
 #vim
 #vim-enhanced
 %end
+
 EOF
 
 cat >> "$OUTPUT_FILE" <<EOF
@@ -429,6 +457,7 @@ cat >> "$OUTPUT_FILE" <<EOF
 #/bin/yum -y update
 systemctl enable cockpit.socket
 %end
+
 EOF
 
 cat >> "$OUTPUT_FILE" <<EOF
