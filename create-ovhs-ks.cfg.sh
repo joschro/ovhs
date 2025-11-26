@@ -217,9 +217,9 @@ cat >> "$OUTPUT_FILE" <<EOF
 authselect --enableshadow --passalgo=sha512
 
 # Use graphical install
-#graphical
+graphical
 # Perform kickstart installation in text mode
-text
+#text
 
 # Use CDROM / network installation media
 # when using http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso:
@@ -239,7 +239,7 @@ url --metalink="https://mirrors.centos.org/metalink?repo=centos-baseos-\$release
 firstboot --enable
 
 # Do not configure the X Window System
-skipx
+#skipx
 
 # Keyboard layouts
 keyboard --vckeymap=de-nodeadkeys --xlayouts='de (nodeadkeys)'
@@ -280,11 +280,11 @@ firewall --enabled --port=53:tcp
 #services --enabled="chronyd,systemd-resolved"
 services --enabled="chronyd"
 
+# Timeserver
 timesource --ntp-server=0.de.pool.ntp.org
 timesource --ntp-server=1.de.pool.ntp.org
 timesource --ntp-server=2.de.pool.ntp.org
 # System timezone
-#timezone Europe/Berlin --utc --ntpserver 0.de.pool.ntp.org --ntpserver 1.de.pool.ntp.org --ntpserver 2.de.pool.ntp.org --ntpserver 3.de.pool.ntp.org
 timezone Europe/Berlin --utc
 
 EOF
@@ -294,7 +294,6 @@ test "$DATA_MODE" = "destroy" && cat >> "$OUTPUT_FILE" <<EOF
 zerombr
 clearpart --all --initlabel --disklabel=$DISK_LABEL
 EOF
-#test "$DISK_MODE" = "single_hd" && test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ### SINGLE HD INSTALL:
 # Ignore all disks except the intended ones
@@ -302,28 +301,28 @@ ignoredisk --only-use=$HDD_1
 EOF
 test "$DISK_MODE" = "single_hd" && test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
 # Partition clearing information
-clearpart --none --initlabel  --disklabel=$DISK_LABEL
+clearpart --none
 EOF
 cat >> "$OUTPUT_FILE" <<EOF
 ## Disk partitioning information
-reqpart --add-boot
+#reqpart --add-boot
 
 EOF
 
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && test "$DISK_LABEL" = "gpt" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
 bootloader --location=mbr --boot-drive=$HDD_1
-#part biosboot --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=biosboot
+part biosboot --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=biosboot
 
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI booting only
 bootloader --location=mbr --boot-drive=$HDD_1
-#part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB --label=EFI
+part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB --label=EFI
 
 EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
-#part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB --label=boot
+part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB --label=boot
 part pv.01 --fstype="lvmpv" --ondisk=$HDD_1 --asprimary --size=100000 --grow --encrypted --luks-version=luks2 --passphrase=1234567890 --label=lvmpv
 
 EOF
