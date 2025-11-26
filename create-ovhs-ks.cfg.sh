@@ -294,7 +294,8 @@ test "$DATA_MODE" = "destroy" && cat >> "$OUTPUT_FILE" <<EOF
 zerombr
 clearpart --all --initlabel --disklabel=$DISK_LABEL
 EOF
-test "$DISK_MODE" = "single_hd" && test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
+#test "$DISK_MODE" = "single_hd" && test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
+test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ### SINGLE HD INSTALL:
 # Ignore all disks except the intended ones
 ignoredisk --only-use=$HDD_1
