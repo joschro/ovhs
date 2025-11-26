@@ -9,12 +9,15 @@ usage() {
     echo "Options:"
     echo "  -h, --help      						Show this help message"
     echo "  -v, --verbose   						Enable verbose output"
-    echo "  -f, --file FILE 						Specify output file"
     echo "  -b, --bootmode <bios|uefi>					Specify boot mode"
+    echo "  -c|--core							Only install core OS, don't run post-install"
     echo "  -d, --diskmode <single_hd|mirrored_hd|mirrored_cached_hd>	Specify disk mode"
+    echo "  -f, --file FILE 						Specify output file"
     echo "  -hdd1 <HDD1>						HDD1 identifier"
     echo "  -hdd2 <HDD2>						HDD2 identifier"
     echo "  -hdd3 <HDD3>						HDD3 identifier"
+    echo "  -l, --disklabel <msdos|gpt>					Specify disk label"
+    echo "  -i, --interface						Specify network interface for installation"
     echo "  --data <keep|destroy>					Confirm to keep or delete all data on disks"
     echo
     echo "with HDDx being one of the harddisk identifiers from the output of"
@@ -24,11 +27,14 @@ usage() {
 
 # Default values
 VERBOSE=false
+CORE=false
 OUTPUT_FILE="ovhs-ks.cfg"
 ROOT_PWD='$6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG610bMyqoUgNTI6h.btAtrqcz4nt6Zu6qKs97r1'
+INTERFACE="default"
 VG_OS="cs_ovhs"
 VG_DATA="ovhs_data"
 VG_CACHE="ovhs_cache"
+DISK_LABEL="default"
 BOOT_SIZE_MB=2048
 EFI_SIZE_MB=500
 HOME_SIZE_MB=10000
@@ -77,6 +83,24 @@ while [[ $# -gt 0 ]]; do
                 	usage
             	fi 
             	;;
+	-i|--interface)
+	    	if [[ -n "$2" ]]; then
+                	INTERFACE="$2"
+                	shift 2
+            	else
+                	echo "Error: --interface requires an argument." >&2
+                	usage
+            	fi 
+            	;;
+	-l|--disklabel)
+	    	if [[ -n "$2" ]]; then
+                	DISK_LABEL="$2"
+                	shift 2
+            	else
+                	echo "Error: --disklabel requires an argument." >&2
+                	usage
+            	fi 
+            	;;
 	-hdd1|--hdd1)
 	    	if [[ -n "$2" ]]; then
 		       	HDD_1="disk/by-id/scsi-$2"
@@ -113,6 +137,10 @@ while [[ $# -gt 0 ]]; do
                 	usage
             	fi  
             	;;
+        -c|--core)
+            	CORE=true
+            	shift
+            	;;
         -*)
             	echo "Error: Unknown option $1" >&2
             	usage
@@ -140,6 +168,11 @@ if [[ "$DISK_MODE" != "single_hd" && "$DISK_MODE" != "mirrored_hd" && "$DISK_MOD
     usage
 fi
 
+if [[ "$DISK_LABEL" != "default" && "$DISK_LABEL" != "msdos" && "$DISK_LABEL" != "gpt" ]]; then
+    echo "Error: --disklabel <msdos|gpt> is required." >&2
+    usage
+fi
+
 if [[ -z "$HDD_1" ]]; then
     echo "Error: --hdd1 is required." >&2
     usage
@@ -163,8 +196,10 @@ fi
 # Main script logic
 if [[ "$VERBOSE" == true ]]; then
     echo "Creating file: $OUTPUT_FILE"
+    echo "INTERFACE: $INTERFACE"
     echo "BOOT_MODE: $BOOT_MODE"
     echo "DISK_MODE: $DISK_MODE"
+    echo "DISK_LABEL: $DISK_LABEL"
     echo "DATA_MODE: $DATA_MODE"
 fi
 
@@ -214,12 +249,20 @@ keyboard --vckeymap=de-nodeadkeys --xlayouts='de (nodeadkeys)'
 lang en_US.UTF-8
 
 # Network information
-network  --hostname=ovhs --bootproto=dhcp --device=link --onboot=on --ipv6=auto --activate
-#network  --bootproto=dhcp --onboot=on --ipv6=auto --activate
-#network  --bootproto=dhcp --device=enp3s0 --ipv6=auto --activate
-#network  --bootproto=dhcp --device=enp4s1 --ipv6=auto
-#network --hostname=ovhs
+network --hostname=ovhs
+EOF
 
+test "$INTERFACE" = "default" && cat >> "$OUTPUT_FILE" <<EOF
+network --bootproto=dhcp --device=link --onboot=on --ipv6=auto --activate
+
+EOF
+
+test "$INTERFACE" != "default" && cat >> "$OUTPUT_FILE" <<EOF
+network --bootproto=dhcp --device=$INTERFACE --onboot=on --ipv6=auto --activate
+
+EOF
+
+cat >> "$OUTPUT_FILE" <<EOF
 # Root password
 # you can use "python -c 'import crypt; print(crypt.crypt("My Password", crypt.mksalt()))'" to create the hash on a linux command line
 # the below example reflects the password "ovhs"
@@ -247,36 +290,40 @@ timezone Europe/Berlin --utc
 EOF
 
 test "$DATA_MODE" = "destroy" && cat >> "$OUTPUT_FILE" <<EOF
-clearpart --all --initlabel
+# Partition clearing information
 zerombr
-
+clearpart --all --initlabel --disklabel=$DISK_LABEL
 EOF
 test "$DISK_MODE" = "single_hd" && test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
 ### SINGLE HD INSTALL:
 # Ignore all disks except the intended ones
 ignoredisk --only-use=$HDD_1
+EOF
+test "$DISK_MODE" = "single_hd" && test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
 # Partition clearing information
-clearpart --all --initlabel --drives=$HDD_1
-zerombr
+clearpart --none --initlabel  --disklabel=$DISK_LABEL
+EOF
+cat >> "$OUTPUT_FILE" <<EOF
 ## Disk partitioning information
-#reqpart --add-boot
+reqpart --add-boot
 
 EOF
-test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
+
+test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && test "$DISK_LABEL" = "gpt" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
 bootloader --location=mbr --boot-drive=$HDD_1
-part biosboot --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=biosboot
+#part biosboot --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=biosboot
 
 EOF
 test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI booting only
 bootloader --location=mbr --boot-drive=$HDD_1
-part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB --label=EFI
+#part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB --label=EFI
 
 EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB --label=boot
-part pv.01 --ondisk=$HDD_1 --asprimary --size=100000 --grow --encrypted --passphrase=1234567890 --label=lvm
+#part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB --label=boot
+part pv.01 --ondisk=$HDD_1 --asprimary --size=100000 --grow --encrypted --luks-version=luks2 --passphrase=1234567890 --label=lvm
 
 EOF
 
@@ -460,7 +507,7 @@ systemctl enable cockpit.socket
 
 EOF
 
-cat >> "$OUTPUT_FILE" <<EOF
+test $CORE == false && cat >> "$OUTPUT_FILE" <<EOF
 # copy CentOS install ISO image to /home/tmp/ for later re-use
 #%post --nochroot
 #mkdir -p /mnt/sysimage/home/tmp
@@ -480,11 +527,11 @@ cat >> "$OUTPUT_FILE" <<EOF
 #chown ovhs:ovhs /home/ovhs/run-ovhs_ansible_install.sh
 %end
 
-reboot
 EOF
 
 cat >> "$OUTPUT_FILE" <<EOF
 
+reboot
 EOF
 
 # Success message
