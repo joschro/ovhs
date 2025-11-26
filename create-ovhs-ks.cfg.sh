@@ -217,9 +217,9 @@ cat >> "$OUTPUT_FILE" <<EOF
 authselect --enableshadow --passalgo=sha512
 
 # Use graphical install
-graphical
+#graphical
 # Perform kickstart installation in text mode
-#text
+text
 
 # Use CDROM / network installation media
 # when using http://isoredirect.centos.org/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso:
@@ -239,7 +239,7 @@ url --metalink="https://mirrors.centos.org/metalink?repo=centos-baseos-\$release
 firstboot --enable
 
 # Do not configure the X Window System
-#skipx
+skipx
 
 # Keyboard layouts
 keyboard --vckeymap=de-nodeadkeys --xlayouts='de (nodeadkeys)'
