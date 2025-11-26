@@ -323,7 +323,7 @@ bootloader --location=mbr --boot-drive=$HDD_1
 EOF
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 #part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB --label=boot
-part pv.01 --ondisk=$HDD_1 --asprimary --size=100000 --grow --encrypted --luks-version=luks2 --passphrase=1234567890 --label=lvm
+part pv.01 --fstype="lvmpv" --ondisk=$HDD_1 --asprimary --size=100000 --grow --encrypted --luks-version=luks2 --passphrase=1234567890 --label=lvmpv
 
 EOF
 
@@ -430,7 +430,10 @@ logvol /home          --vgname=$VG_OS --fstype="ext4" --size=$HOME_SIZE_MB --nam
 logvol /tmp           --vgname=$VG_OS --fstype="ext4" --size=$TMP_SIZE_MB  --name=tmp
 
 EOF
+test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
+logvol /data          --vgname=$VG_OS --fstype="ext4" --size=1024 --grow --maxsize=102400 --name=data
 
+EOF
 ## create above volumes as thin volumes:
 #logvol none            --vgname=$VG_OS --name=lvThinPool --thinpool --metadatasize=16000 --size=120000 --grow
 #logvol /               --vgname=$VG_OS --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=30000 --name=root
