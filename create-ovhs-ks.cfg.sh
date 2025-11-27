@@ -312,8 +312,27 @@ EOF
 
 test "$DATA_MODE" = "destroy" && cat >> "$OUTPUT_FILE" <<EOF
 # Partition clearing information
+%pre
+#!/bin/bash
+# Stoppe vorhandene Software-RAID Arrays
+for md in /dev/md*; do
+    mdadm --stop \$md || true
+done
+
+# Entferne Volume-Groups
+for vg in \$(vgs --noheadings -o vg_name); do
+    vgremove -ff -y \$vg || true
+done
+
+# Entferne physikalische Volumes
+for pv in \$(pvs --noheadings -o pv_name); do
+    pvremove -ff -y \$pv || true
+done
+%end
+
 zerombr
 clearpart --all --initlabel --disklabel=$DISK_LABEL
+
 EOF
 test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
 # Partition clearing information
@@ -416,7 +435,7 @@ part pv.1002   --fstype="lvmpv" --ondisk=$HDD_1 --asprimary --size=10000 --grow
 
 # Mirrored data disks
 part raid.0001 --fstype="mdmember" --ondisk=$HDD_2 --size=10000 --grow
-part raid.0002 --fstype="mdmember" --ondisk=$HDD_2 --size=10000 --grow
+part raid.0002 --fstype="mdmember" --ondisk=$HDD_3 --size=10000 --grow
 raid pv.0012 --device=luks-pv00 --fstype="lvmpv" --level=RAID1 raid.0001 raid.0002
 
 
