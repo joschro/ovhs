@@ -541,8 +541,8 @@ cat >> "$OUTPUT_FILE" <<EOF
 #EOF
 
 # configure nested virtualization for the host
-#grep -i "^model.*intel" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_intel nested=1.*\)/\1/" /etc/modprobe.d/kvm.conf
-#grep -i "^model.*amd" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_amd nested=1.*\)/\1/" /etc/modprobe.d/kvm.conf
+grep -i "^model.*intel" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_intel nested=1.*\)/\1/" /etc/modprobe.d/kvm.conf
+grep -i "^model.*amd" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_amd nested=1.*\)/\1/" /etc/modprobe.d/kvm.conf
 
 # update installation
 #yum -y install epel-release
