@@ -38,16 +38,18 @@ VG_OS="cs_ovhs"
 VG_DATA="ovhs_data"
 VG_CACHE="ovhs_cache"
 DISK_LABEL="default"
-BOOT_SIZE_MB=2048
-EFI_SIZE_MB=500
-HOME_SIZE_MB=10000
-ROOT_SIZE_MB=71680
-SWAP_SIZE_MB=16097
-TMP_SIZE_MB=2000
-VAR_SIZE_MB=20000
-VAR_CRASH_SIZE_MB=10000
-VAR_LOG_SIZE_MB=8000
-VAR_LOG_AUDIT_SIZE_MB=2000
+#OS_SIZE_MB=153600		# size of OS partition (150GB)
+OS_SIZE_MB=254806		# size of OS partition (250GB)
+BOOT_SIZE_MB=2048		# size of /boot partition (2GB)
+EFI_SIZE_MB=512			# size of efi boot partition (512MB)
+HOME_SIZE_MB=10240		# size of /home volume (10GB)
+ROOT_SIZE_MB=71680		# size of root volume (70GB)
+SWAP_SIZE_MB=16384		# size of swap volume (16GB)
+TMP_SIZE_MB=2048		# size of /tmp volume (2GB)
+VAR_SIZE_MB=20480		# size of /var volume (20GB)
+VAR_CRASH_SIZE_MB=10240		# size of /var/crash volume (10GB)
+VAR_LOG_SIZE_MB=8096		# size of /var/log volume (8GB)
+VAR_LOG_AUDIT_SIZE_MB=2048	# size of /var/log/audit volume (2GB)
 OPTIONS=""
 
 # Parse command-line arguments
@@ -356,8 +358,8 @@ part /boot/efi --fstype="efi"   --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB 
 
 EOF
 test $ENCRYPT == true && OPTIONS="--encrypted --luks-version=luks2 --passphrase=1234567890"
-test "$DISK_MODE" = "single_hd"  && OPTIONS="--size=100000 --grow $OPTIONS"
-test "$DISK_MODE" = "mirrored_cached_hd" && OPTIONS="--size=254806 $OPTIONS"
+test "$DISK_MODE" = "single_hd"  && OPTIONS="--size=10000 --grow $OPTIONS"
+test "$DISK_MODE" = "mirrored_cached_hd" && OPTIONS="--size=$OS_SIZE_MB $OPTIONS"
 test "$DISK_MODE" = "single_hd" -o "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
 part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB --label=boot
 part pv.1001 --fstype="lvmpv" --ondisk=$HDD_1 --asprimary $OPTIONS --label=lvmpv
@@ -386,11 +388,11 @@ test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
 part raid.01 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB
 part raid.02 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=$BOOT_SIZE_MB
 # VG_OS
-part raid.21 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=200000
-part raid.22 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=200000
+part raid.21 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=$OS_SIZE_MB
+part raid.22 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=$OS_SIZE_MB
 
-part raid.31 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=100000 --grow
-part raid.32 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=100000 --grow
+part raid.31 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=10000 --grow
+part raid.32 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=10000 --grow
 raid /boot --device=boot --fstype="ext4" --level=1 raid.01 raid.02
 
 EOF
@@ -412,8 +414,8 @@ test "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
 part pv.1002   --fstype="lvmpv" --ondisk=$HDD_1 --asprimary --size=10000 --grow
 
 # Mirrored data disks
-part raid.0001 --fstype="mdmember" --ondisk=$HDD_2 --size=100000 --grow
-part raid.0002 --fstype="mdmember" --ondisk=$HDD_2 --size=100000 --grow
+part raid.0001 --fstype="mdmember" --ondisk=$HDD_2 --size=10000 --grow
+part raid.0002 --fstype="mdmember" --ondisk=$HDD_2 --size=10000 --grow
 raid pv.0012 --device=luks-pv00 --fstype="lvmpv" --level=RAID1 raid.0001 raid.0002
 
 
@@ -436,7 +438,7 @@ EOF
 cat >> "$OUTPUT_FILE" <<EOF
 ### Logical Volume information:
 ## create thick volumes:
-logvol swap           --vgname=$VG_OS --fstype="swap" --size=16097 --name=swap
+logvol swap           --vgname=$VG_OS --fstype="swap" --size=$SWAP_SIZE_MB --name=swap
 logvol /              --vgname=$VG_OS --fstype="ext4" --size=$ROOT_SIZE_MB --name=root
 logvol /var           --vgname=$VG_OS --fstype="ext4" --size=$VAR_SIZE_MB --name=var
 logvol /var/crash     --vgname=$VG_OS --fstype="ext4" --size=$VAR_CRASH_SIZE_MB --name=var_crash
