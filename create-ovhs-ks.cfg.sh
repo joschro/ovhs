@@ -33,6 +33,7 @@ CORE=false
 OUTPUT_FILE="ovhs-ks.cfg"
 ENCRYPT=false
 ROOT_PWD='$6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG610bMyqoUgNTI6h.btAtrqcz4nt6Zu6qKs97r1'
+ENC_OPT="--encrypted --luks-version=luks2 --passphrase=1234567890"
 INTERFACE="default"
 VG_OS="cs_ovhs"
 VG_DATA="ovhs_data"
@@ -357,7 +358,7 @@ part /boot/efi --fstype="efi"   --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB 
 # --->
 
 EOF
-test $ENCRYPT == true && OPTIONS="--encrypted --luks-version=luks2 --passphrase=1234567890"
+OPTIONS=""; test $ENCRYPT == true && OPTIONS="$ENC_OPT"
 test "$DISK_MODE" = "single_hd"  && OPTIONS="--size=10000 --grow $OPTIONS"
 test "$DISK_MODE" = "mirrored_cached_hd" && OPTIONS="--size=$OS_SIZE_MB $OPTIONS"
 test "$DISK_MODE" = "single_hd" -o "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
@@ -403,7 +404,7 @@ raid /boot/efi --device=boot_efi --fstype="efi" --level=1 --fsoptions="umask=007
 # --->
 
 EOF
-test $ENCRYPT == true && OPTIONS="--encrypted --luks-version=luks2 --passphrase=1234567890"
+OPTIONS=""; test $ENCRYPT == true && OPTIONS="$ENC_OPT"
 test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
 raid pv.1001 --device=md1 --level=1 raid.21 raid.22 $OPTIONS
 raid pv.1002 --device=md2 --level=1 raid.31 raid.32
@@ -454,6 +455,7 @@ EOF
 test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
 logvol /data          --vgname=$VG_DATA --fstype="ext4" --size=1024 --grow --maxsize=102400 --name=data
 EOF
+OPTIONS=""; test $ENCRYPT == true && OPTIONS="$ENC_OPT"
 test "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
 logvol /data          --vgname=$VG_DATA --fstype="ext4" --size=102400 $OPTIONS --name=data --cachepvs=pv.1002 --cachemode=writeback --cachesize=200000
 EOF
