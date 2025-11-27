@@ -12,6 +12,8 @@ usage() {
     echo "  -b, --bootmode <bios|uefi>					Specify boot mode"
     echo "  -c|--core							Only install core OS, don't run post-install"
     echo "  -d, --diskmode <single_hd|mirrored_hd|mirrored_cached_hd>	Specify disk mode"
+    echo "  -e, --encrypt						Use encryption"
+    echo "  -p, --password <password>					Specify encryption password"
     echo "  -f, --file FILE 						Specify output file"
     echo "  -hdd1 <HDD1>						HDD1 identifier"
     echo "  -hdd2 <HDD2>						HDD2 identifier"
@@ -29,6 +31,7 @@ usage() {
 VERBOSE=false
 CORE=false
 OUTPUT_FILE="ovhs-ks.cfg"
+ENCRYPT=false
 ROOT_PWD='$6$4DVXePa2eKw4pukd$eS1jWHtxhROlAn0TWrzTirngzT4JHin6eFk1YQGBDGTVy3yG610bMyqoUgNTI6h.btAtrqcz4nt6Zu6qKs97r1'
 INTERFACE="default"
 VG_OS="cs_ovhs"
@@ -45,6 +48,7 @@ VAR_SIZE_MB=20000
 VAR_CRASH_SIZE_MB=10000
 VAR_LOG_SIZE_MB=8000
 VAR_LOG_AUDIT_SIZE_MB=2000
+OPTIONS=""
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
@@ -80,6 +84,19 @@ while [[ $# -gt 0 ]]; do
                 	shift 2
             	else
                 	echo "Error: --diskmode requires an argument." >&2
+                	usage
+            	fi 
+            	;;
+	-e|--encrypt)
+            	ENCRYPT=true
+	        shift	
+            	;;
+	-p|--password)
+	    	if [[ -n "$2" ]]; then
+                	ROOT_PWD="$2"
+                	shift 2
+            	else
+                	echo "Error: --password requires an argument." >&2
                 	usage
             	fi 
             	;;
@@ -201,6 +218,7 @@ if [[ "$VERBOSE" == true ]]; then
     echo "DISK_MODE: $DISK_MODE"
     echo "DISK_LABEL: $DISK_LABEL"
     echo "DATA_MODE: $DATA_MODE"
+    echo "ENCRYPT: $ENCRYPT"
 fi
 
 # Reset output file
@@ -294,130 +312,123 @@ test "$DATA_MODE" = "destroy" && cat >> "$OUTPUT_FILE" <<EOF
 zerombr
 clearpart --all --initlabel --disklabel=$DISK_LABEL
 EOF
+test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
+# Partition clearing information
+clearpart --none
+EOF
+
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ### SINGLE HD INSTALL:
 # Ignore all disks except the intended ones
 ignoredisk --only-use=$HDD_1
 EOF
-test "$DISK_MODE" = "single_hd" && test "$DATA_MODE" = "keep" && cat >> "$OUTPUT_FILE" <<EOF
-# Partition clearing information
-clearpart --none
-EOF
-cat >> "$OUTPUT_FILE" <<EOF
-## Disk partitioning information
-#reqpart --add-boot
-
-EOF
-
-test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "bios" && test "$DISK_LABEL" = "gpt" && cat >> "$OUTPUT_FILE" <<EOF
-# For BIOS booting only
-bootloader --location=mbr --boot-drive=$HDD_1
-part biosboot --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=biosboot
-
-EOF
-test "$DISK_MODE" = "single_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
-# For UEFI booting only
-bootloader --location=mbr --boot-drive=$HDD_1
-part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB --label=EFI
-
-EOF
-test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB --label=boot
-part pv.01 --fstype="lvmpv" --ondisk=$HDD_1 --asprimary --size=100000 --grow --encrypted --luks-version=luks2 --passphrase=1234567890 --label=lvmpv
-
-EOF
-
 test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
 ### MIRRORED HD INSTALL:
 # Ignore all disks except the intended ones
 ignoredisk --only-use=$HDD_1,$HDD_2
-# Partition clearing information
-clearpart --all --initlabel --drives=$HDD_1,$HDD_2
-# Disk partitioning information
+EOF
+test "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
+### MIRRORED HD INSTALL WITH OS&CACHE HD
+# Ignore all disks except the intended ones
+ignoredisk --only-use=$HDD_1,$HDD_2,$HDD_3
+EOF
+
+cat >> "$OUTPUT_FILE" <<EOF
+## Disk partitioning information
+#reqpart --add-boot
+bootloader --location=mbr --boot-drive=$HDD_1
 
 EOF
-test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "bios" && cat >> "$OUTPUT_FILE" <<EOF
+
+test "$DISK_MODE" = "single_hd" -o "$DISK_MODE" = "mirrored_cached_hd" && test "$BOOT_MODE" = "bios" && test "$DISK_LABEL" = "gpt" && cat >> "$OUTPUT_FILE" <<EOF
 # For BIOS booting only
 # <---
-part biosboot_hd1 --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1
-part biosboot_hd2 --fstype="biosboot" --ondisk=$HDD_2 --asprimary --size=1
+part biosboot --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=biosboot
 # --->
 
 EOF
-test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
-part raid.01 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB
-part raid.02 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=$BOOT_SIZE_MB
+test "$DISK_MODE" = "single_hd" -o "$DISK_MODE" = "mirrored_cached_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
+# For UEFI booting only
+# <---
+part /boot/efi --fstype="efi"   --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB --label=EFI --fsoptions="umask=0077,shortname=    winnt"
+#part /boot/efi --fstype="efi" --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB --label=EFI
+# --->
+
+EOF
+test $ENCRYPT == true && OPTIONS="--encrypted --luks-version=luks2 --passphrase=1234567890"
+test "$DISK_MODE" = "single_hd"  && OPTIONS="--size=100000 --grow $OPTIONS"
+test "$DISK_MODE" = "mirrored_cached_hd" && OPTIONS="--size=254806 $OPTIONS"
+test "$DISK_MODE" = "single_hd" -o "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
+part /boot    --fstype="ext4"      --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB --label=boot
+part pv.1001 --fstype="lvmpv" --ondisk=$HDD_1 --asprimary $OPTIONS --label=lvmpv
+
+EOF
+
+test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "bios" && test "$DISK_LABEL" = "gpt" && cat >> "$OUTPUT_FILE" <<EOF
+# For BIOS booting only
+# <---
+part biosboot_hd1 --fstype="biosboot" --ondisk=$HDD_1 --asprimary --size=1 --label=biosboot_hd1
+part biosboot_hd2 --fstype="biosboot" --ondisk=$HDD_2 --asprimary --size=1 --label=biosboot_hd2
+# --->
 
 EOF
 test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI boot only
-# <---
+# <--- /boot/efi
 part raid.11 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=$EFI_SIZE_MB
 part raid.12 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=$EFI_SIZE_MB
 # --->
 
 EOF
 
-test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
+test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
+# /boot
+part raid.01 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=$BOOT_SIZE_MB
+part raid.02 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=$BOOT_SIZE_MB
+# VG_OS
 part raid.21 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=200000
 part raid.22 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=200000
+
 part raid.31 --fstype="mdmember" --ondisk=$HDD_1 --asprimary --size=100000 --grow
 part raid.32 --fstype="mdmember" --ondisk=$HDD_2 --asprimary --size=100000 --grow
 raid /boot --device=boot --fstype="ext4" --level=1 raid.01 raid.02
 
 EOF
-test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
+test "$DISK_MODE" = "mirrored_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
 # For UEFI boot only
 # <---
 raid /boot/efi --device=boot_efi --fstype="efi" --level=1 --fsoptions="umask=0077,shortname=winnt" raid.11 raid.12
 # --->
 
 EOF
-test "$DISK_MODE" = "mirrored_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
-raid pv.01 --device=md1 --level=1 raid.21 raid.22 --encrypted --passphrase=1234567890
-raid pv.02 --device=md2 --level=1 raid.31 raid.32
-
-EOF
-test "$DISK_MODE" = "single_hd" -o "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
-volgroup $VG_OS --pesize=4096 pv.01 --reserved-percent=20
+test $ENCRYPT == true && OPTIONS="--encrypted --luks-version=luks2 --passphrase=1234567890"
+test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
+raid pv.1001 --device=md1 --level=1 raid.21 raid.22 $OPTIONS
+raid pv.1002 --device=md2 --level=1 raid.31 raid.32
 
 EOF
 
 test "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
-### MIRRORED HD INSTALL WITH OS&CACHE HD
-# Ignore all disks except the intended ones
-ignoredisk --only-use=sda,sdb,sdc
-# Partition clearing information
-#clearpart --none --initlabel
-clearpart --all --initlabel --drives=sda,sdb,sdc --all
-# Disk partitioning information
-# OS disk
+part pv.1002   --fstype="lvmpv" --ondisk=$HDD_1 --asprimary --size=10000 --grow
 
-EOF
-test "$DISK_MODE" = "mirrored_cached_hd" && test "$BOOT_MODE" = "uefi" && cat >> "$OUTPUT_FILE" <<EOF
-part /boot/efi --fstype="efi"   --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=$EFI_SIZE_MB --fsoptions="umask=0077,shortname=    winnt"
-part /boot     --fstype="ext4"  --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=$BOOT_SIZE_MB
-part pv.1001   --fstype="lvmpv" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=254806 --encrypted --luks-version=luks2     #--passphrase=1234567890
-part pv.1002   --fstype="lvmpv" --ondisk=disk/by-id/scsi-$HDD_1 --asprimary --size=10000 --grow
 # Mirrored data disks
-part raid.0001 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --size=100000 --grow
-part raid.0002 --fstype="mdmember" --ondisk=disk/by-id/scsi-$HDD_2 --size=100000 --grow
+part raid.0001 --fstype="mdmember" --ondisk=$HDD_2 --size=100000 --grow
+part raid.0002 --fstype="mdmember" --ondisk=$HDD_2 --size=100000 --grow
 raid pv.0012 --device=luks-pv00 --fstype="lvmpv" --level=RAID1 raid.0001 raid.0002
-
-### Volume Group information:
-#volgroup $VG_OS --pesize=4096 pv.1001 --reserved-percent=20
-volgroup $VG_OS --pesize=4096 pv.1001
 
 # add cache pv to data volume group
 #volgroup $VG_CACHE --pesize=4096 pv.1002
 
 volgroup $VG_DATA --pesize=4096 pv.0012 pv.1002
 # create thick volumes:
-logvol /data          --vgname=$VG_DATA --fstype="ext4" --size=102400 --encrypted --luks-version=luks2 --name=data --cachepvs=pv.1002 --cachemode=writeback --cachesize=200000 #--passphrase=1234567890
+logvol /data          --vgname=$VG_DATA --fstype="ext4" --size=102400 $OPTIONS --name=data --cachepvs=pv.1002 --cachemode=writeback --cachesize=200000
 
 EOF
 
 cat >> "$OUTPUT_FILE" <<EOF
+### Volume Group information:
+volgroup $VG_OS --pesize=4096 pv.1001 --reserved-percent=10
+
 ### Logical Volume information:
 ## create thick volumes:
 logvol swap           --vgname=$VG_OS --fstype="swap" --size=16097 --name=swap
