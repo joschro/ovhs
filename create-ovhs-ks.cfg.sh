@@ -416,19 +416,24 @@ part raid.0001 --fstype="mdmember" --ondisk=$HDD_2 --size=100000 --grow
 part raid.0002 --fstype="mdmember" --ondisk=$HDD_2 --size=100000 --grow
 raid pv.0012 --device=luks-pv00 --fstype="lvmpv" --level=RAID1 raid.0001 raid.0002
 
-# add cache pv to data volume group
-#volgroup $VG_CACHE --pesize=4096 pv.1002
-
-volgroup $VG_DATA --pesize=4096 pv.0012 pv.1002
-# create thick volumes:
-logvol /data          --vgname=$VG_DATA --fstype="ext4" --size=102400 $OPTIONS --name=data --cachepvs=pv.1002 --cachemode=writeback --cachesize=200000
 
 EOF
 
 cat >> "$OUTPUT_FILE" <<EOF
 ### Volume Group information:
 volgroup $VG_OS --pesize=4096 pv.1001 --reserved-percent=10
+EOF
+test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
+volgroup $VG_DATA --pesize=4096 pv.1002
+EOF
+test "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
+# add cache pv to data volume group
+#volgroup $VG_CACHE --pesize=4096 pv.1002
 
+volgroup $VG_DATA --pesize=4096 pv.0012 pv.1002
+EOF
+
+cat >> "$OUTPUT_FILE" <<EOF
 ### Logical Volume information:
 ## create thick volumes:
 logvol swap           --vgname=$VG_OS --fstype="swap" --size=16097 --name=swap
@@ -439,12 +444,18 @@ logvol /var/log       --vgname=$VG_OS --fstype="ext4" --size=$VAR_LOG_SIZE_MB  -
 logvol /var/log/audit --vgname=$VG_OS --fstype="ext4" --size=$VAR_LOG_AUDIT_SIZE_MB  --name=var_audit
 logvol /home          --vgname=$VG_OS --fstype="ext4" --size=$HOME_SIZE_MB --name=home
 logvol /tmp           --vgname=$VG_OS --fstype="ext4" --size=$TMP_SIZE_MB  --name=tmp
-
 EOF
+
 test "$DISK_MODE" = "single_hd" && cat >> "$OUTPUT_FILE" <<EOF
 logvol /data          --vgname=$VG_OS --fstype="ext4" --size=1024 --grow --maxsize=102400 --name=data
-
 EOF
+test "$DISK_MODE" = "mirrored_hd" && cat >> "$OUTPUT_FILE" <<EOF
+logvol /data          --vgname=$VG_DATA --fstype="ext4" --size=1024 --grow --maxsize=102400 --name=data
+EOF
+test "$DISK_MODE" = "mirrored_cached_hd" && cat >> "$OUTPUT_FILE" <<EOF
+logvol /data          --vgname=$VG_DATA --fstype="ext4" --size=102400 $OPTIONS --name=data --cachepvs=pv.1002 --cachemode=writeback --cachesize=200000
+EOF
+
 ## create above volumes as thin volumes:
 #logvol none            --vgname=$VG_OS --name=lvThinPool --thinpool --metadatasize=16000 --size=120000 --grow
 #logvol /               --vgname=$VG_OS --fstype="ext4" --thin --poolname=lvThinPool --fsoptions="defaults,discard" --size=30000 --name=root
