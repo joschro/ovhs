@@ -1,0 +1,19 @@
+# self-hosted engine setup with gluster storage taken from
+# https://www.ovirt.org/documentation/gluster-hyperconverged/chap-Single_node_hyperconverged.html
+# http://community.redhat.com/blog/2014/10/up-and-running-with-ovirt-3-5/ and
+# http://community.redhat.com/blog/2014/11/up-and-running-with-ovirt-3-5-part-two/
+%post
+# multipathd throws ugly errors, thus we blacklist the harddisks
+cat >> /etc/multipath.conf <<EOF
+
+blacklist {
+       devnode "^sd[a-b]"
+}
+
+yum -y install epel-release
+/bin/yum -y install http://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm
+/bin/yum -y install http://resources.ovirt.org/pub/yum-repo/ovirt-release43.rpm
+/bin/yum -y install gdeploy cockpit-ovirt-dashboard vdsm-gluster ovirt-engine-appliance #ansible git
+/bin/yum -y update
+EOF
+%end

@@ -46,11 +46,12 @@ EFI_SIZE_MB=512			# size of efi boot partition (512MB)
 HOME_SIZE_MB=10240		# size of /home volume (10GB)
 ROOT_SIZE_MB=71680		# size of root volume (70GB)
 SWAP_SIZE_MB=16384		# size of swap volume (16GB)
-TMP_SIZE_MB=2048		# size of /tmp volume (2GB)
+TMP_SIZE_MB=10240		# size of /tmp volume (10GB)
 VAR_SIZE_MB=20480		# size of /var volume (20GB)
 VAR_CRASH_SIZE_MB=10240		# size of /var/crash volume (10GB)
 VAR_LOG_SIZE_MB=8096		# size of /var/log volume (8GB)
 VAR_LOG_AUDIT_SIZE_MB=2048	# size of /var/log/audit volume (2GB)
+VAR_TMP_SIZE_MB=20480		# size of /var/tmp volume (20GB)
 OPTIONS=""
 
 # Parse command-line arguments
@@ -299,7 +300,7 @@ firewall --enabled --port=53:tcp
 
 # System services
 #services --enabled="chronyd,systemd-resolved"
-services --enabled="chronyd"
+services --enabled="chronyd,cockpit.socket"
 
 # Timeserver
 timesource --ntp-server=0.de.pool.ntp.org
@@ -464,6 +465,7 @@ logvol /var           --vgname=$VG_OS --fstype="ext4" --size=$VAR_SIZE_MB --name
 logvol /var/crash     --vgname=$VG_OS --fstype="ext4" --size=$VAR_CRASH_SIZE_MB --name=var_crash
 logvol /var/log       --vgname=$VG_OS --fstype="ext4" --size=$VAR_LOG_SIZE_MB  --name=var_log
 logvol /var/log/audit --vgname=$VG_OS --fstype="ext4" --size=$VAR_LOG_AUDIT_SIZE_MB  --name=var_audit
+logvol /var/tmp       --vgname=$VG_OS --fstype="ext4" --size=$VAR_TMP_SIZE_MB  --name=var_tmp
 logvol /home          --vgname=$VG_OS --fstype="ext4" --size=$HOME_SIZE_MB --name=home
 logvol /tmp           --vgname=$VG_OS --fstype="ext4" --size=$TMP_SIZE_MB  --name=tmp
 EOF
@@ -515,7 +517,7 @@ cockpit-system
 cockpit-ws
 #deltarpm
 #screen
-#nfs-utils
+nfs-utils
 #system-storage-manager
 #ctdb
 #git
@@ -526,54 +528,38 @@ tmux
 
 EOF
 
-cat >> "$OUTPUT_FILE" <<EOF
-# self-hosted engine setup with gluster storage taken from
-# https://www.ovirt.org/documentation/gluster-hyperconverged/chap-Single_node_hyperconverged.html
-# http://community.redhat.com/blog/2014/10/up-and-running-with-ovirt-3-5/ and
-# http://community.redhat.com/blog/2014/11/up-and-running-with-ovirt-3-5-part-two/
-%post
-# multipathd throws ugly errors, thus we blacklist the harddisks
-#cat >> /etc/multipath.conf <<EOF
-#
-#blacklist {
-#       devnode "^sd[a-b]"
-#}
-#EOF
-
-# configure nested virtualization for the host
-grep -i "^model.*intel" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_intel nested=1.*\)/\1/" /etc/modprobe.d/kvm.conf
-grep -i "^model.*amd" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_amd nested=1.*\)/\1/" /etc/modprobe.d/kvm.conf
-
-# update installation
-#yum -y install epel-release
-#/bin/yum -y install http://resources.ovirt.org/pub/yum-repo/ovirt-release-master.rpm
-#/bin/yum -y install http://resources.ovirt.org/pub/yum-repo/ovirt-release43.rpm
-#/bin/yum -y install gdeploy cockpit-ovirt-dashboard vdsm-gluster ovirt-engine-appliance #ansible git
-#/bin/yum -y update
-systemctl enable cockpit.socket
-%end
-
-EOF
-
 test $CORE == false && cat >> "$OUTPUT_FILE" <<EOF
-# copy CentOS install ISO image to /home/tmp/ for later re-use
-#%post --nochroot
+%post --nochroot
+# configure nested virtualization for the host
+grep -i "^model.*intel" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_intel nested=1.*\)/\1/" /mnt/sysimage/etc/modprobe.d/kvm.conf
+grep -i "^model.*amd" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_amd nested=1.*\)/\1/" /mnt/sysimage/etc/modprobe.d/kvm.conf
+
+# copy install ISO image to /home/tmp/ for later re-use
 #mkdir -p /mnt/sysimage/home/tmp
 #dd if=$(df | grep "/run/install" | head -n1 | cut -d" " -f1) of=/mnt/sysimage/home/tmp/$(blkid -o value $(df | grep "/run/install" | head -n1 | cut -d" " -f1) | grep -i CentOS).iso bs=4M
-#%end
+%end
 
 # automatically start oVirtHomeServer installation via ansible (deactivated, just download setup script)
 %post
-/bin/yum -y install epel-release
-/bin/yum -y install ansible
-# oVirt engine
-/bin/yum -y install centos-release-ovirt45
-/bin/yum -y install ovirt-hosted-engine-setup
-#/bin/yum -y install ovirt-engine-appliance
+/bin/dnf -y update
+/bin/dnf -y install epel-release
+/bin/dnf -y install ansible
+
+# install oVirt engine
+/bin/dnf copr enable -y ovirt/ovirt-master-snapshot centos-stream-9
+/bin/dnf install -y ovirt-release-master
+/bin/dnf -y install centos-release-ovirt45
+/bin/dnf -y install ovirt-hosted-engine-setup
+#/bin/dnf -y install ovirt-engine-appliance
+
+# get install script
 #ansible-pull -U https://github.com/joschro/ovhs.git
-#/bin/curl -o /home/ovhs/run-ovhs_ansible_install.sh https://raw.githubusercontent.com/joschro/ovhs/master/run-ovhs_ansible_install.sh
-#chown ovhs:ovhs /home/ovhs/run-ovhs_ansible_install.sh
+/bin/curl -o /home/ovhs/run-ovhs_ansible_install.sh https://raw.githubusercontent.com/joschro/ovhs/master/run-ovhs_ansible_install.sh
+chown ovhs:ovhs /home/ovhs/run-ovhs_ansible_install.sh
 %end
+
+# enable Cockpit
+#systemctl enable cockpit.socket
 
 EOF
 
