@@ -508,22 +508,18 @@ cat >> "$OUTPUT_FILE" <<EOF
 #@virtualization-platform
 #@virtualization-tools
 #@container-management
-#bind-utils
 chrony
-#cockpit-machines
+cockpit-machines
 cockpit
 cockpit-bridge
 cockpit-system
 cockpit-ws
-#deltarpm
-#screen
+screen
 nfs-utils
-#system-storage-manager
-#ctdb
-#git
+ctdb
+git
 tmux
-#vim
-#vim-enhanced
+vim-enhanced
 %end
 
 EOF
@@ -531,8 +527,9 @@ EOF
 test $CORE == false && cat >> "$OUTPUT_FILE" <<EOF
 %post --nochroot
 # configure nested virtualization for the host
-grep -i "^model.*intel" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_intel nested=1.*\)/\1/" /mnt/sysimage/etc/modprobe.d/kvm.conf
-grep -i "^model.*amd" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_amd nested=1.*\)/\1/" /mnt/sysimage/etc/modprobe.d/kvm.conf
+#grep -i "^model.*intel" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_intel nested=1.*\)/\1/" /mnt/sysimage/etc/modprobe.d/kvm.conf
+#grep -i "^model.*amd" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_amd nested=1.*\)/\1/" /mnt/sysimage/etc/modprobe.d/kvm.conf
+# (/etc/modprobe.d/kvm.conf doesn't exist yet, thus moving this to ansible playbook)
 
 # copy install ISO image to /home/tmp/ for later re-use
 #mkdir -p /mnt/sysimage/home/tmp
@@ -541,16 +538,16 @@ grep -i "^model.*amd" /proc/cpuinfo && /usr/bin/sed -i "s/^#\(options kvm_amd ne
 
 # automatically start oVirtHomeServer installation via ansible (deactivated, just download setup script)
 %post
-/bin/dnf -y update
-/bin/dnf -y install epel-release
-/bin/dnf -y install ansible
+/bin/dnf update -y
+/bin/dnf install -y epel-release
+/bin/dnf install -y ansible git vim-enhanced cockpit-machines screen ctdb 
 
 # install oVirt engine
 /bin/dnf copr enable -y ovirt/ovirt-master-snapshot centos-stream-9
 /bin/dnf install -y ovirt-release-master
-/bin/dnf -y install centos-release-ovirt45
-/bin/dnf -y install ovirt-hosted-engine-setup
-#/bin/dnf -y install ovirt-engine-appliance
+/bin/dnf install -y centos-release-ovirt45
+/bin/dnf install -y ovirt-hosted-engine-setup
+#/bin/dnf install -y ovirt-engine-appliance
 
 # get install script
 #ansible-pull -U https://github.com/joschro/ovhs.git
