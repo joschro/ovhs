@@ -540,7 +540,7 @@ test $CORE == false && cat >> "$OUTPUT_FILE" <<EOF
 # install oVirt engine
 /bin/dnf copr enable -y ovirt/ovirt-master-snapshot centos-stream-9
 /bin/dnf install -y ovirt-release-master
-/bin/dnf install -y centos-release-ovirt45
+#/bin/dnf install -y centos-release-ovirt45
 /bin/dnf install -y ovirt-hosted-engine-setup
 #/bin/dnf install -y ovirt-engine-appliance
 
