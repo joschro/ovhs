@@ -509,17 +509,12 @@ cat >> "$OUTPUT_FILE" <<EOF
 #@virtualization-tools
 #@container-management
 chrony
-cockpit-machines
 cockpit
 cockpit-bridge
 cockpit-system
 cockpit-ws
-screen
 nfs-utils
-ctdb
-git
 tmux
-vim-enhanced
 %end
 
 EOF
@@ -540,7 +535,7 @@ test $CORE == false && cat >> "$OUTPUT_FILE" <<EOF
 %post
 /bin/dnf update -y
 /bin/dnf install -y epel-release
-/bin/dnf install -y ansible git vim-enhanced cockpit-machines screen ctdb 
+/usr/bin/crb enable
 
 # install oVirt engine
 /bin/dnf copr enable -y ovirt/ovirt-master-snapshot centos-stream-9
@@ -553,10 +548,9 @@ test $CORE == false && cat >> "$OUTPUT_FILE" <<EOF
 #ansible-pull -U https://github.com/joschro/ovhs.git
 /bin/curl -o /home/ovhs/run-ovhs_ansible_install.sh https://raw.githubusercontent.com/joschro/ovhs/master/run-ovhs_ansible_install.sh
 chown ovhs:ovhs /home/ovhs/run-ovhs_ansible_install.sh
-%end
 
-# enable Cockpit
-#systemctl enable cockpit.socket
+/bin/dnf install -y ansible git vim-enhanced cockpit-machines screen ctdb 
+%end
 
 EOF
 
